@@ -1,0 +1,14 @@
+import { Command } from '@heroku-cli/command';
+export default class ContainerRelease extends Command {
+    static description: string;
+    static examples: string[];
+    static flags: {
+        app: import("@oclif/core/interfaces").OptionFlag<string, import("@oclif/core/interfaces").CustomOptions>;
+        remote: import("@oclif/core/interfaces").OptionFlag<string | undefined, import("@oclif/core/interfaces").CustomOptions>;
+        verbose: import("@oclif/core/interfaces").BooleanFlag<boolean>;
+    };
+    static strict: boolean;
+    static topic: string;
+    static usage: string;
+    run(): Promise<void>;
+}
