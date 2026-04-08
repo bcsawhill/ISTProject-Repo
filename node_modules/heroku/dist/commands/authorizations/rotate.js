@@ -1,0 +1,16 @@
+import { Command } from '@heroku-cli/command';
+import { Args, ux } from '@oclif/core';
+import { display } from '../../lib/authorizations/authorizations.js';
+export default class AuthorizationsRotate extends Command {
+    static description = 'updates an OAuth authorization token';
+    static args = {
+        id: Args.string({ required: true, description: 'ID of the authorization' }),
+    };
+    async run() {
+        const { args } = await this.parse(AuthorizationsRotate);
+        ux.action.start('Rotating OAuth Authorization');
+        const { body: authorization } = await this.heroku.post(`/oauth/authorizations/${encodeURIComponent(args.id)}/actions/regenerate-tokens`);
+        ux.action.stop();
+        display(authorization);
+    }
+}
