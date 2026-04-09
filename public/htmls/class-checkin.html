@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Class Check-In</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body class="layout--sidebar">
+
+  <aside class="sidebar">
+    <a class="logo-wrap" href="dashboard.html">
+      <img src="../images/Logo.png" class="logo">
+    </a>
+
+    <nav class="nav">
+
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn">Instructors ▾</button>
+        <div class="nav-dropdown-menu">
+          <a href="instructor.html">Add New Instructor</a>
+          <a href="instructor-search.html">Search/Edit Instructors</a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn">Packages ▾</button>
+        <div class="nav-dropdown-menu">
+          <a href="package-sale.html">Package Sale</a>
+          <a href="package-sales.html">Package Records</a>
+          <a href="package-edit.html">Edit Packages</a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn">Classes ▾</button>
+        <div class="nav-dropdown-menu">
+          <a href="class-schedule.html">Class Schedule</a>
+          <a href="class-checkin.html">Class Check-In</a>
+          <a href="class-records.html" class="active">Class Records</a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn">Customers ▾</button>
+        <div class="nav-dropdown-menu">
+          <a href="customers.html">Add New Customer</a>
+          <a href="customers-search.html">Search/Edit Customer</a>
+        </div>
+      </div>
+
+      <a href="../index.html">Log Out</a>
+    </nav>
+  </aside>
+
+  <main class="layout--center">
+    <div class="card card--wide" id="startScreen">
+      <h1 class="page-title">Class Check-In</h1>
+      <button class="btn btn--primary" id="startCheckinBtn">Start Check-Ins</button>
+    </div>
+
+    <div class="card card--wide hidden" id="checkinScreen">
+      <h1 id="checkinTitle"></h1>
+      <h3 id="checkinInstructor"></h3>
+
+      <label>Search Customer</label>
+      <input type="text" id="customerSearch" class="form-input" placeholder="Type to search...">
+      <div id="customerResults" class="search-results hidden"></div>
+
+      <h3>Checked-In Students</h3>
+      <ul id="attendeeList"></ul>
+
+      <div class="btn-row">
+        <button class="btn btn--primary" id="submitRecordBtn">Submit Class Record</button>
+        <button class="btn" id="cancelCheckinBtn">Cancel</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal for selecting class + instructor -->
+  <div id="selectModal" class="modal hidden">
+    <div class="modal-content card">
+      <h2>Select Class & Instructor</h2>
+
+      <label>Class</label>
+      <select id="select_class" class="form-input"></select>
+
+      <label>Instructor</label>
+      <input type="text" id="select_instructor" class="form-input" placeholder="Type to search...">
+      <div id="selectInstructorResults" class="search-results hidden"></div>
+
+      <div class="btn-row">
+        <button class="btn btn--primary" id="continueBtn">Continue</button>
+        <button class="btn" id="closeSelectModal">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/classCheckin.js"></script>
+
+  <script>
+    document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        btn.parentElement.classList.toggle("open");
+      });
+    });
+  </script>
+
+</body>
+</html>

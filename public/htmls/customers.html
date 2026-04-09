@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Instructor</title>
+    <title>Customers</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
   
@@ -54,40 +54,38 @@
     </nav>
   </aside>
 
-  <!-- Instructor form -->
+  <!-- Customer form -->
   <main class="layout--center">
-     <div class="instInfoContainer">
-            <h1>Enter Instructor Info</h1>
-            <form class="card" id="instructorForm">
-                <label class="instinfolabel" for="firstName">First:</label>
+     <div class="customerInfoContainer">
+            <h1>Enter Customer Info</h1>
+            <form class="card" id="customerForm">
+                <label class="custinfolabel" for="firstName">First:</label>
                 <input type="text" id="firstName" name="firstName" required>
 
-                <label class="instinfolabel" for="lastName">Last:</label>
+                <label class="custinfolabel" for="lastName">Last:</label>
                 <input type="text" id="lastName" name="lastName" required>
 
-                <label class="instinfolabel" for="email">Email:</label>
+                <label class="custinfolabel" for="email">Email:</label>
                 <input type="email" id="email" name="email" required>
 
-                <label class="instinfolabel" for="phone">Phone Number:</label>
+                <label class="custinfolabel" for="phone">Phone Number:</label>
                 <input type="tel" id="phone" name="phone" required>
 
-                <label class="instinfolabel" for="address">Address:</label>
+                <label class="custinfolabel" for="address">Address:</label>
                 <textarea type="text" id="address" name="address"></textarea>
 
-                <fieldset>
-                  <legend>Preferred Contact</legend>
-                   <div class="radio-row">
-                    <label><input type="radio" name="pref" value="phone">Phone</label>
-                    <label><input type="radio" name="pref" value="email">Email</label>
-                   </div>
-                 </fieldset>
+                <label class="custinfolabel" for="classBalance">Class Balance:</label>
+                <input type="Number" id="classBalance" name="classBalance">
 
-                <button id="instructorsubmit" class="btn" type="submit">Submit</button>
+                <label class="custinfolabel" for="senior">Customer is a senior</label>
+                <input type="checkbox" id="senior" name="senior">
+
+                <button id="customersubmit" class="btn" type="submit">Submit</button>
               </form>
         </div>
   </main>
 
-<script src="../js/instructor.js"></script>
+<script src="../js/customer.js"></script>
 <script>
   document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
     btn.addEventListener("click", () => {

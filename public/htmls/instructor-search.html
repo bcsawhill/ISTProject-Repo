@@ -1,18 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Instructor</title>
-    <link rel="stylesheet" href="../css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Instructors</title>
+  <link rel="stylesheet" href="../css/style.css">
 </head>
-  
 
-    <body class="layout--sidebar">
-  <!-- Re-use the same sidebar -->
+<body class="layout--sidebar">
+
   <aside class="sidebar">
     <a class="logo-wrap" href="dashboard.html">
-      <img src="../images/Logo.png" alt="YogaTrack Logo" class="logo">
+      <img src="../images/Logo.png" class="logo">
     </a>
     <nav class="nav">
 
@@ -54,40 +53,76 @@
     </nav>
   </aside>
 
-  <!-- Instructor form -->
   <main class="layout--center">
-     <div class="instInfoContainer">
-            <h1>Enter Instructor Info</h1>
-            <form class="card" id="instructorForm">
-                <label class="instinfolabel" for="firstName">First:</label>
-                <input type="text" id="firstName" name="firstName" required>
 
-                <label class="instinfolabel" for="lastName">Last:</label>
-                <input type="text" id="lastName" name="lastName" required>
+  <div class="instructorSearchContainer">
+  <div class="card card--wide">
 
-                <label class="instinfolabel" for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
+    <h1 class="page-title">Search Instructors</h1>
 
-                <label class="instinfolabel" for="phone">Phone Number:</label>
-                <input type="tel" id="phone" name="phone" required>
+    <div class="search-bar-container">
+      <input type="text" id="searchInput" class="search-input"
+             placeholder="Search by name, email, or phone">
+    </div>
 
-                <label class="instinfolabel" for="address">Address:</label>
-                <textarea type="text" id="address" name="address"></textarea>
+    <table class="results-table" id="resultsTable">
+      <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Preferred Contact</th>
+            <th>Edit</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-                <fieldset>
+  </div>
+</div>
+
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal hidden">
+    <div class="modal-content card">
+      <h2>Edit Instructor</h2>
+
+      <form id="editForm">
+        <input type="hidden" id="edit_instructorId">
+
+        <label>First Name</label>
+        <input type="text" id="edit_firstName">
+
+        <label>Last Name</label>
+        <input type="text" id="edit_lastName">
+
+        <label>Email</label>
+        <input type="email" id="edit_email">
+
+        <label>Phone</label>
+        <input type="tel" id="edit_phone">
+
+        <label>Address</label>
+        <textarea id="edit_address"></textarea>
+
+        <fieldset>
                   <legend>Preferred Contact</legend>
                    <div class="radio-row">
                     <label><input type="radio" name="pref" value="phone">Phone</label>
                     <label><input type="radio" name="pref" value="email">Email</label>
                    </div>
-                 </fieldset>
+        </fieldset>
 
-                <button id="instructorsubmit" class="btn" type="submit">Submit</button>
-              </form>
-        </div>
-  </main>
+        <button type="submit" class="btn">Save Changes</button>
+        <button type="button" id="closeModal" class="btn">Cancel</button>
+      </form>
+    </div>
+  </div>
 
-<script src="../js/instructor.js"></script>
+</main>
+
+  <script src="../js/instructorSearch.js"></script>
 <script>
   document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
     btn.addEventListener("click", () => {

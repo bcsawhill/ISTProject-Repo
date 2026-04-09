@@ -1,15 +1,16 @@
-const Instructor = require("../models/instructorModel.cjs");
+const Customer = require("../models/customerModel.cjs");
 
 exports.add = async (req, res) => {
   try {
     const {
-      instructorId,
+      customerId,
       firstName,
       lastName,
       email,
       phone,
       address,
-      pref
+      classBalance,
+      senior
     } = req.body;
 
     // Basic validation
@@ -17,35 +18,36 @@ exports.add = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Create a new instructor document
-    const newInstructor = new Instructor({
-      instructorId,
+    // Create a new customer document
+    const newCustomer = new Customer({
+      customerId,
       firstName,
       lastName,
       email,
       phone,
       address,
-      pref
+      classBalance,
+      senior
     });
 
     // Save to database
-    await newInstructor.save();
-    res.status(201).json({ message: "Instructor added successfully", instructor: newInstructor });
+    await newCustomer.save();
+    res.status(201).json({ message: "Customer added successfully", customer: newCustomer });
   } catch (err) {
-    console.error("Error adding instructor:", err.message);
-    res.status(500).json({ message: "Failed to add instructor", error: err.message });
+    console.error("Error adding customer:", err.message);
+    res.status(500).json({ message: "Failed to add customer", error: err.message });
   }
 };
 
 exports.getNextId = async (req, res) => {
   try {
-    const lastInstructor = await Instructor.find({})
-      .sort({ instructorId: -1 })
+    const lastCustomer = await Customer.find({})
+      .sort({ customerId: -1 })
       .limit(1);
 
     let maxNumber = 1;
-    if (lastInstructor.length > 0) {
-      const lastId = lastInstructor[0].instructorId;
+    if (lastCustomer.length > 0) {
+      const lastId = lastCustomer[0].customerId;
       const match = lastId.match(/\d+$/);
       if (match) {
         maxNumber = parseInt(match[0]) + 1;
@@ -61,7 +63,7 @@ exports.getNextId = async (req, res) => {
 exports.search = async (req, res) => {
   const q = req.query.q || "";
 
-  const results = await Instructor.find({
+  const results = await Customer.find({
     $or: [
       { firstName: new RegExp(q, "i") },
       { lastName: new RegExp(q, "i") },
@@ -74,32 +76,32 @@ exports.search = async (req, res) => {
 };
 
 exports.getOne = async (req, res) => {
-  const instructor = await Instructor.findOne({ instructorId: req.params.instructorId });
-  res.json(instructor);
+  const customer = await Customer.findOne({ customerId: req.params.customerId });
+  res.json(customer);
 };
 
 exports.update = async (req, res) => {
-  const updated = await Instructor.findOneAndUpdate(
-    { instructorId: req.params.instructorId },
+  const updated = await Customer.findOneAndUpdate(
+    { customerId: req.params.customerId },
     req.body,
     { new: true }
   );
 
-  res.json({ message: "Updated", instructor: updated });
+  res.json({ message: "Updated", customer: updated });
 };
 
 exports.delete = async (req, res) => {
   try {
-    const deleted = await Instructor.findOneAndDelete({
-      instructorId: req.params.instructorId
+    const deleted = await Customer.findOneAndDelete({
+      customerId: req.params.customerId
     });
 
     if (!deleted) {
-      return res.status(404).json({ message: "Instructor not found" });
+      return res.status(404).json({ message: "Customer not found" });
     }
 
-    res.json({ message: "Instructor deleted", instructor: deleted });
+    res.json({ message: "Customer deleted", customer: deleted });
   } catch (err) {
-    res.status(500).json({ message: "Failed to delete instructor", error: err.message });
+    res.status(500).json({ message: "Failed to delete customer", error: err.message });
   }
 };

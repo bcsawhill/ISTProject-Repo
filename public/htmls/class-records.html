@@ -2,23 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>YogiTrack • Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Class Records</title>
   <link rel="stylesheet" href="../css/style.css">
 </head>
 
-<body>
-  <!-- Overlay first: full-screen dimmer behind everything -->
-  <div class="background">
-    <div class="overlay">
+<body class="layout--sidebar">
 
-  <div class="layout--sidebar">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <a class="logo-wrap" href="dashboard.html">
-        <img src="../Images/Logo.png" alt="YogiTrack Logo" class="logo" />
+  <aside class="sidebar">
+    <a class="logo-wrap" href="dashboard.html">
+      <img src="../images/Logo.png" class="logo">
+    </a>
 
-      </a>
-      <nav class="nav">
+    <nav class="nav">
 
       <div class="nav-dropdown">
         <button class="nav-dropdown-btn">Instructors ▾</button>
@@ -56,18 +52,36 @@
 
       <a href="../index.html">Log Out</a>
     </nav>
-    </aside>
+  </aside>
 
+  <main class="layout--center">
+    <div class="card card--wide">
+      <h1 class="page-title">Class Records</h1>
 
-  </div>
-    </div> <!-- End of background wrapper -->
-    <script>
-  document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      btn.parentElement.classList.toggle("open");
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Class</th>
+            <th>Instructor</th>
+            <th>Attendees</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="recordsTable"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="../js/classRecords.js"></script>
+
+  <script>
+    document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        btn.parentElement.classList.toggle("open");
+      });
     });
-  });
-</script>
-</body>
+  </script>
 
+</body>
 </html>
