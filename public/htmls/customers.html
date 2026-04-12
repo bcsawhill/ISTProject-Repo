@@ -80,6 +80,15 @@
                 <label class="custinfolabel" for="senior">Customer is a senior</label>
                 <input type="checkbox" id="senior" name="senior">
 
+                <div id="roleFieldWrapper" style="display:none;">
+                  <label class="custinfolabel" for="role">User Role:</label>
+                    <select id="role" name="role">
+                      <option value="member">Member</option>
+                      <option value="staff">Staff</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                </div>
+
                 <button id="customersubmit" class="btn" type="submit">Submit</button>
               </form>
         </div>
@@ -87,8 +96,28 @@
 
 <script src="../js/customer.js"></script>
 <script>
+async function showRoleForAdmins() {
+    try {
+      const res = await fetch("/api/me");
+      if (!res.ok) return;
+
+      const user = await res.json();
+      if (user.role === "admin") {
+        const roleField = document.getElementById("roleFieldWrapper");
+        if (roleField) {
+          roleField.style.display = "block";
+        }
+      }
+    } catch (err) {
+      console.error("Could not load current user:", err);
+    }
+  }
+
+  showRoleForAdmins();
+
   document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
       btn.parentElement.classList.toggle("open");
     });
   });

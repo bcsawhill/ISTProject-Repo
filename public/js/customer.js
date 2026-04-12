@@ -2,7 +2,6 @@ document.getElementById("customerForm").addEventListener("submit", async (e) => 
   e.preventDefault();
 
   try {
-    // Get the next available customer ID
     const idRes = await fetch("/api/customer/getNextId");
     const { nextId } = await idRes.json();
 
@@ -13,7 +12,7 @@ document.getElementById("customerForm").addEventListener("submit", async (e) => 
       email: document.getElementById("email").value.trim(),
       phone: document.getElementById("phone").value.trim(),
       address: document.getElementById("address").value.trim(),
-      classBalance: Number(document.getElementById("classBalance").value) ?? 0,
+      classBalance: Number(document.getElementById("classBalance").value) || 0,
       senior: document.getElementById("senior").checked
     };
 
@@ -22,7 +21,7 @@ document.getElementById("customerForm").addEventListener("submit", async (e) => 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(customerData)
     });
-    console.log(customerData);
+
     const result = await res.json();
     if (!res.ok) throw new Error(result.message || "Failed to add customer");
 

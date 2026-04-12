@@ -2,6 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const User = require("./models/userModel.cjs");
+const session = require("express-session");
+const Customer = require("./models/customerModel.cjs");
 
 const app = express();
 
@@ -19,6 +21,14 @@ app.use(express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(
+  session({
+    secret: "yogitrack-secret-key",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
 app.use("/api/instructor", require("./routes/instructorRoutes.cjs"));
 app.use("/api/package", require("./routes/packageRoutes.cjs"));
 app.use("/api/customer", require("./routes/customerRoutes.cjs"));
@@ -27,34 +37,81 @@ app.use("/api/classRecord", require("./routes/classRecordRoutes.cjs"));
 
 app.post("/register", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const {
+      username,
+      password,
+      firstName,
+      lastName,
+      email,
+      phone,
+      address
+    } = req.body;
 
-    if (!username || !password) {
-      return res.redirect("/index.html?error=missing_fields");
+    if (!username || !password || !firstName || !lastName || !email || !phone) {
+      return res.redirect("/htmls/register.html?error=missing_fields");
     }
 
     const existingUser = await User.findOne({ username });
     if (existingUser) {
-      return res.redirect("/index.html?error=username_taken");
+      return res.redirect("/htmls/register.html?error=username_taken");
     }
 
+    const existingCustomerEmail = await Customer.findOne({ email });
+    if (existingCustomerEmail) {
+      return res.redirect("/htmls/register.html?error=email_taken");
+    }
+
+    const idRes = await Customer.find({})
+      .sort({ customerId: -1 })
+      .limit(1);
+
+    let maxNumber = 1;
+    if (idRes.length > 0) {
+      const lastId = idRes[0].customerId;
+      const match = lastId.match(/\d+$/);
+      if (match) {
+        maxNumber = parseInt(match[0], 10) + 1;
+      }
+    }
+
+    const customerId = `Y${String(maxNumber).padStart(3, "0")}`;
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const memberCount = await User.countDocuments({ role: "member" });
-    const customerId = `Y${String(memberCount + 1).padStart(3, "0")}`;
+    const newCustomer = new Customer({
+      customerId,
+      firstName,
+      lastName,
+      email,
+      phone,
+      address: address || "",
+      classBalance: 0,
+      senior: false,
+      unlimitedActive: false,
+      unlimitedExpires: null
+    });
+
+    await newCustomer.save();
 
     const newUser = new User({
       username,
       passwordHash,
       role: "member",
-      customerId,
+      customerId
     });
 
     await newUser.save();
+
+    req.session.user = {
+      id: newUser._id,
+      username: newUser.username,
+      role: newUser.role,
+      customerId: newUser.customerId
+    };
+
     return res.redirect("/htmls/dashboard.html");
   } catch (err) {
-    console.error("Register error:", err);
-    return res.redirect("/index.html?error=register_failed");
+    console.error("Register error full:", err);
+    return res.redirect("/htmls/register.html?error=register_failed");
   }
 });
 
@@ -78,12 +135,39 @@ app.post("/login", async (req, res) => {
       return res.redirect("/index.html?error=login_failed");
     }
 
+    req.session.user = {
+      id: user._id,
+      username: user.username,
+      role: user.role,
+      customerId: user.customerId,
+    };
+
     return res.redirect("/htmls/dashboard.html");
   } catch (err) {
     console.error("Login error:", err);
     return res.redirect("/index.html?error=login_failed");
   }
 });
+
+function requireLogin(req, res, next) {
+  if (!req.session.user) {
+    return res.status(401).json({ error: "Not logged in" });
+  }
+  next();
+}
+
+function requireAdmin(req, res, next) {
+  if (!req.session.user) {
+    return res.status(401).json({ error: "Not logged in" });
+  }
+
+  if (req.session.user.role !== "admin") {
+    return res.status(403).json({ error: "Admins only" });
+  }
+
+  next();
+}
+
 
 // Check all users and roles
 app.get("/check-users", async (req, res) => {
@@ -93,6 +177,56 @@ app.get("/check-users", async (req, res) => {
   } catch (err) {
     console.error("Check users error:", err);
     res.status(500).send("Error checking users.");
+  }
+});
+
+app.get("/api/me", requireLogin, (req, res) => {
+  res.json(req.session.user);
+});
+
+app.get("/api/user-role/:customerId", requireAdmin, async (req, res) => {
+  try {
+    const user = await User.findOne(
+      { customerId: req.params.customerId },
+      "username role customerId"
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found for this customer" });
+    }
+
+    res.json(user);
+  } catch (err) {
+    console.error("Get user role error:", err);
+    res.status(500).json({ error: "Error loading user role" });
+  }
+});
+
+app.post("/api/user-role/:customerId", requireAdmin, async (req, res) => {
+  try {
+    const { role } = req.body;
+
+    if (!["admin", "staff", "member"].includes(role)) {
+      return res.status(400).json({ error: "Invalid role" });
+    }
+
+    const user = await User.findOne({ customerId: req.params.customerId });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found for this customer" });
+    }
+
+    user.role = role;
+    await user.save();
+
+    if (req.session.user && String(req.session.user.id) === String(user._id)) {
+      req.session.user.role = role;
+    }
+
+    res.json({ message: "Role updated successfully", role: user.role });
+  } catch (err) {
+    console.error("Update user role error:", err);
+    res.status(500).json({ error: "Error updating role" });
   }
 });
 

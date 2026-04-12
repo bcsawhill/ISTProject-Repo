@@ -7,7 +7,7 @@
 </head>
 <body class="layout--center">
   <main class="card card--wide text--center">
-    <img src="images/HomLogo.png" alt="YogiTrack Logo" class="logo">
+    <img src="images/HomLogo.png" alt="Yoga H'om Logo" class="logo">
     <h1>Welcome to Yoga H'om</h1>
     <p>Your all-in-one studio management companion.</p>
 
@@ -15,19 +15,16 @@
 
     <h2>Login</h2>
     <form action="/login" method="POST">
-      <input type="text" name="username" placeholder="Username" required />
-      <input type="password" name="password" placeholder="Password" required />
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="password" name="password" placeholder="Password" required>
       <button class="btn btn--primary" type="submit">Login</button>
     </form>
 
     <hr>
 
     <h2>Create Account</h2>
-    <form action="/register" method="POST">
-      <input type="text" name="username" placeholder="Username" required />
-      <input type="password" name="password" placeholder="Password" required />
-      <button class="btn" type="submit">Register</button>
-    </form>
+    <p style="margin-top: 12px;">Don’t have an account?</p>
+    <a class="btn" href="/htmls/register.html">Create one here</a>
   </main>
 
   <script>
@@ -40,12 +37,8 @@
 
       if (error === "login_failed") {
         message = "Invalid username or password.";
-      } else if (error === "username_taken") {
-        message = "That username is already in use.";
       } else if (error === "missing_fields") {
         message = "Please fill in all required fields.";
-      } else if (error === "register_failed") {
-        message = "Could not create account. Please try again.";
       }
 
       if (message) {
