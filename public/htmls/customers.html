@@ -12,7 +12,7 @@
   <!-- Re-use the same sidebar -->
   <aside class="sidebar">
     <a class="logo-wrap" href="dashboard.html">
-      <img src="../images/Logo.png" alt="YogaTrack Logo" class="logo">
+      <img src="../images/HomLogo.png" alt="YogaTrack Logo" class="logo">
     </a>
     <nav class="nav">
 
@@ -80,6 +80,15 @@
                 <label class="custinfolabel" for="senior">Customer is a senior</label>
                 <input type="checkbox" id="senior" name="senior">
 
+                <div id="roleFieldWrapper" style="display:none;">
+                  <label class="custinfolabel" for="role">User Role:</label>
+                    <select id="role" name="role">
+                      <option value="member">Member</option>
+                      <option value="staff">Staff</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                </div>
+
                 <button id="customersubmit" class="btn" type="submit">Submit</button>
               </form>
         </div>
@@ -87,11 +96,53 @@
 
 <script src="../js/customer.js"></script>
 <script>
+async function showRoleForAdmins() {
+    try {
+      const res = await fetch("/api/me");
+      if (!res.ok) return;
+
+      const user = await res.json();
+      if (user.role === "admin") {
+        const roleField = document.getElementById("roleFieldWrapper");
+        if (roleField) {
+          roleField.style.display = "block";
+        }
+      }
+    } catch (err) {
+      console.error("Could not load current user:", err);
+    }
+  }
+
+  showRoleForAdmins();
+
+  async function protectStaffAdminPage() {
+      try {
+        const res = await fetch("/api/me");
+
+        if (!res.ok) {
+          window.location.href = "/index.html";
+          return;
+        }
+
+        const user = await res.json();
+
+        if (!["admin", "staff"].includes(user.role)) {
+          window.location.href = "/htmls/member-dashboard.html";
+        }
+      } catch (err) {
+        window.location.href = "/index.html";
+      }
+    }
+
+    protectStaffAdminPage();
+
   document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
       btn.parentElement.classList.toggle("open");
     });
   });
 </script>
 </body>
 </html>
+

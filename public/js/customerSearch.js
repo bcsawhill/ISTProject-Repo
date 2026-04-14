@@ -1,6 +1,45 @@
 const searchInput = document.getElementById("searchInput");
 const resultsTable = document.querySelector("#resultsTable tbody");
 
+let loggedInUser = null;
+
+async function loadCurrentUser() {
+  try {
+    const res = await fetch("/api/me");
+    if (res.ok) {
+      loggedInUser = await res.json();
+    }
+  } catch (err) {
+    console.error("Could not load current user:", err);
+  }
+}
+
+async function loadRoleForCustomer(customerId) {
+  const roleWrapper = document.getElementById("roleFieldWrapper");
+  const roleSelect = document.getElementById("edit_role");
+
+  roleWrapper.style.display = "none";
+  roleSelect.value = "member";
+
+  if (!loggedInUser || loggedInUser.role !== "admin") {
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/user-role/${customerId}`);
+
+    if (!res.ok) {
+      return;
+    }
+
+    const userData = await res.json();
+    roleSelect.value = userData.role || "member";
+    roleWrapper.style.display = "block";
+  } catch (err) {
+    console.error("Error loading role:", err);
+  }
+}
+
 // Live search
 searchInput.addEventListener("input", async () => {
   const query = searchInput.value.trim();
@@ -9,20 +48,20 @@ searchInput.addEventListener("input", async () => {
 
   resultsTable.innerHTML = "";
 
-  customers.forEach(c => {
+  customers.forEach((c) => {
     const row = document.createElement("tr");
 
-row.innerHTML = `
-  <td>${c.customerId}</td>
-  <td>${c.firstName} ${c.lastName}</td>
-  <td>${c.email}</td>
-  <td>${c.phone}</td>
-  <td>${c.classBalance}</td>
-  <td>
-    <button class="btn editBtn" data-id="${c.customerId}">Edit</button>
-    <button class="btn deleteBtn" data-id="${c.customerId}">Delete</button>
-  </td>
-`;
+    row.innerHTML = `
+      <td>${c.customerId}</td>
+      <td>${c.firstName} ${c.lastName}</td>
+      <td>${c.email}</td>
+      <td>${c.phone}</td>
+      <td>${c.classBalance}</td>
+      <td>
+        <button class="btn editBtn" data-id="${c.customerId}">Edit</button>
+        <button class="btn deleteBtn" data-id="${c.customerId}">Delete</button>
+      </td>
+    `;
 
     resultsTable.appendChild(row);
   });
@@ -33,13 +72,12 @@ row.innerHTML = `
 
 // Attach edit button events
 function attachEditButtons() {
-  document.querySelectorAll(".editBtn").forEach(btn => {
+  document.querySelectorAll(".editBtn").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
       const res = await fetch(`/api/customer/${id}`);
       const customer = await res.json();
 
-      // Fill modal
       document.getElementById("edit_customerId").value = customer.customerId;
       document.getElementById("edit_firstName").value = customer.firstName;
       document.getElementById("edit_lastName").value = customer.lastName;
@@ -49,13 +87,15 @@ function attachEditButtons() {
       document.getElementById("edit_classBalance").value = customer.classBalance;
       document.getElementById("edit_senior").checked = customer.senior;
 
+      await loadRoleForCustomer(customer.customerId);
+
       document.getElementById("editModal").classList.remove("hidden");
     });
   });
 }
 
 function attachDeleteButtons() {
-  document.querySelectorAll(".deleteBtn").forEach(btn => {
+  document.querySelectorAll(".deleteBtn").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
 
@@ -68,7 +108,7 @@ function attachDeleteButtons() {
 
       if (res.ok) {
         alert("Customer deleted");
-        searchInput.dispatchEvent(new Event("input")); // refresh results
+        searchInput.dispatchEvent(new Event("input"));
       } else {
         alert("Failed to delete customer");
       }
@@ -102,11 +142,30 @@ document.getElementById("editForm").addEventListener("submit", async (e) => {
     body: JSON.stringify(updated)
   });
 
-  if (res.ok) {
-    alert("Customer updated");
-    document.getElementById("editModal").classList.add("hidden");
-    searchInput.dispatchEvent(new Event("input"));
-  } else {
+  if (!res.ok) {
     alert("Update failed");
+    return;
   }
+
+  if (loggedInUser && loggedInUser.role === "admin") {
+    const selectedRole = document.getElementById("edit_role").value;
+
+    const roleRes = await fetch(`/api/user-role/${updated.customerId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: selectedRole })
+    });
+
+    if (!roleRes.ok) {
+      const roleError = await roleRes.json().catch(() => ({}));
+      alert(roleError.error || "Failed to update role");
+      return;
+    }
+  }
+
+  alert("Customer updated");
+  document.getElementById("editModal").classList.add("hidden");
+  searchInput.dispatchEvent(new Event("input"));
 });
+
+loadCurrentUser();

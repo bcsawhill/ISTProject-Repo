@@ -7,67 +7,103 @@
 </head>
 
 <body>
-  <!-- Overlay first: full-screen dimmer behind everything -->
   <div class="background">
     <div class="overlay">
+      <div class="layout--sidebar">
+        <aside class="sidebar">
+          <a class="logo-wrap" href="dashboard.html">
+            <img src="../images/HomLogo.png" alt="YogiTrack Logo" class="logo" />
+          </a>
 
-  <div class="layout--sidebar">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <a class="logo-wrap" href="dashboard.html">
-        <img src="../images/Logo.png" alt="YogiTrack Logo" class="logo" />
+          <nav class="nav">
+            <div class="nav-dropdown" id="nav-instructors">
+              <button class="nav-dropdown-btn">Instructors ▾</button>
+              <div class="nav-dropdown-menu">
+                <a href="instructor.html">Add New Instructor</a>
+                <a href="instructor-search.html">Search/Edit Instructors</a>
+              </div>
+            </div>
 
-      </a>
-      <nav class="nav">
+            <div class="nav-dropdown" id="nav-packages">
+              <button class="nav-dropdown-btn">Packages ▾</button>
+              <div class="nav-dropdown-menu">
+                <a href="package-sale.html">Package Sale</a>
+                <a href="package-sales.html">Package Records</a>
+                <a href="package-edit.html">Edit Packages</a>
+              </div>
+            </div>
 
-      <div class="nav-dropdown">
-        <button class="nav-dropdown-btn">Instructors ▾</button>
-        <div class="nav-dropdown-menu">
-          <a href="instructor.html">Add New Instructor</a>
-          <a href="instructor-search.html">Search/Edit Instructors</a>
-        </div>
+            <div class="nav-dropdown" id="nav-classes">
+              <button class="nav-dropdown-btn">Classes ▾</button>
+              <div class="nav-dropdown-menu">
+                <a href="class-schedule.html">Class Schedule</a>
+                <a href="class-checkin.html">Class Check-In</a>
+                <a href="class-records.html" class="active">Class Records</a>
+              </div>
+            </div>
+
+            <div class="nav-dropdown" id="nav-customers">
+              <button class="nav-dropdown-btn">Customers ▾</button>
+              <div class="nav-dropdown-menu">
+                <a href="customers.html">Add New Customer</a>
+                <a href="customers-search.html">Search/Edit Customer</a>
+              </div>
+            </div>
+
+            <div id="nav-waiver-link">
+              <a href="waiver.html">Waiver</a>
+            </div>
+
+            <a href="../index.html">Log Out</a>
+          </nav>
+        </aside>
       </div>
-
-      <div class="nav-dropdown">
-        <button class="nav-dropdown-btn">Packages ▾</button>
-        <div class="nav-dropdown-menu">
-          <a href="package-sale.html">Package Sale</a>
-          <a href="package-sales.html">Package Records</a>
-          <a href="package-edit.html">Edit Packages</a>
-        </div>
-      </div>
-
-      <div class="nav-dropdown">
-        <button class="nav-dropdown-btn">Classes ▾</button>
-        <div class="nav-dropdown-menu">
-          <a href="class-schedule.html">Class Schedule</a>
-          <a href="class-checkin.html">Class Check-In</a>
-          <a href="class-records.html" class="active">Class Records</a>
-        </div>
-      </div>
-
-      <div class="nav-dropdown">
-        <button class="nav-dropdown-btn">Customers ▾</button>
-        <div class="nav-dropdown-menu">
-          <a href="customers.html">Add New Customer</a>
-          <a href="customers-search.html">Search/Edit Customer</a>
-        </div>
-      </div>
-
-      <a href="../index.html">Log Out</a>
-    </nav>
-    </aside>
-
-
+    </div>
   </div>
-    </div> <!-- End of background wrapper -->
-    <script>
-  document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      btn.parentElement.classList.toggle("open");
-    });
-  });
-</script>
-</body>
 
+  <script>
+    async function applyRoleUI() {
+      try {
+        const res = await fetch("/api/me");
+
+        if (!res.ok) {
+          window.location.href = "/index.html";
+          return;
+        }
+
+        const user = await res.json();
+
+        if (user.role === "member") {
+          const hideIds = [
+            "nav-instructors",
+            "nav-packages",
+            "nav-customers"
+          ];
+
+          hideIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = "none";
+          });
+
+          const classesMenu = document.querySelector("#nav-classes .nav-dropdown-menu");
+          if (classesMenu) {
+            classesMenu.innerHTML = `
+              <a href="class-checkin.html">Class Check-In</a>
+            `;
+          }
+        }
+      } catch (err) {
+        window.location.href = "/index.html";
+      }
+    }
+
+    document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        btn.parentElement.classList.toggle("open");
+      });
+    });
+
+    applyRoleUI();
+  </script>
+</body>
 </html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waiver</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .waiver-card {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 24px;
+    }
+
+    .waiver-text {
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .waiver-text p {
+      margin-bottom: 14px;
+    }
+
+    .waiver-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .waiver-status {
+      margin-top: 20px;
+      padding: 14px;
+      border-radius: 10px;
+      background: #eef7ee;
+      border: 1px solid #b7d8b7;
+    }
+
+    .waiver-error {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #fdecec;
+      border: 1px solid #f2b9b9;
+      color: #8a1f1f;
+      display: none;
+    }
+
+    .waiver-readonly {
+      background: #f5f5f5;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body class="layout--sidebar">
+  <aside class="sidebar">
+    <a class="logo-wrap" href="dashboard.html">
+      <img src="../images/HomLogo.png" alt="Yoga H'om Logo" class="logo">
+    </a>
+
+    <nav class="nav">
+      <div class="nav-dropdown" id="nav-classes">
+        <button class="nav-dropdown-btn">Classes ▾</button>
+        <div class="nav-dropdown-menu" id="nav-classes-menu">
+          <a href="class-schedule.html">Class Schedule</a>
+          <a href="class-checkin.html">Class Check-In</a>
+          <a href="class-records.html">Class Records</a>
+        </div>
+      </div>
+
+      <div id="nav-instructors">
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn">Instructors ▾</button>
+          <div class="nav-dropdown-menu">
+            <a href="instructor.html">Add New Instructor</a>
+            <a href="instructor-search.html">Search/Edit Instructors</a>
+          </div>
+        </div>
+      </div>
+
+      <div id="nav-packages">
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn">Packages ▾</button>
+          <div class="nav-dropdown-menu">
+            <a href="package-sale.html">Package Sale</a>
+            <a href="package-sales.html">Package Records</a>
+            <a href="package-edit.html">Edit Packages</a>
+          </div>
+        </div>
+      </div>
+
+      <div id="nav-customers">
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn">Customers ▾</button>
+          <div class="nav-dropdown-menu">
+            <a href="customers.html">Add New Customer</a>
+            <a href="customers-search.html">Search/Edit Customer</a>
+          </div>
+        </div>
+      </div>
+
+      <a href="waiver.html">Waiver</a>
+      <a href="../index.html">Log Out</a>
+    </nav>
+  </aside>
+
+  <main class="layout--center">
+    <div class="card waiver-card">
+      <h1>Waiver and Release of Liability</h1>
+
+      <div class="waiver-text">
+        <p><strong>I hereby agree to the following:</strong></p>
+
+        <p>1. I am participating in yoga classes or workshops at Yoga H’OM LLC facilities during which I will receive information and instruction about yoga. I recognize that yoga requires physical exertion which may be strenuous and can cause physical injury, and I am fully aware of the risks and hazards involved.</p>
+
+        <p>2. I understand that it is my responsibility to consult with a physician prior to and regarding my participation in yoga classes or workshops. I represent and warrant that I am physically fit, and I have no medical condition which would prevent my full participation in the classes or workshops.</p>
+
+        <p>3. In consideration of being permitted to participate in yoga classes or workshops, I agree to assume full responsibility for any risks including virus or disease transmission, injuries, or damages, known or unknown, which I might incur because of participation.</p>
+
+        <p>4. In further consideration of being permitted to participate in yoga classes or workshops, I knowingly, voluntarily and expressly waive any claim I may have against the instructors at Yoga H’OM individually and Yoga H’OM (the studio) for injury or damages that I may sustain as a result of my participation in yoga classes or workshops.</p>
+
+        <p>5. I, my heirs or legal representatives forever release and waive, discharge and covenant not to sue the instructors at Yoga H’OM individually and Yoga H’OM (the studio) for injury or death caused by their negligence or other acts.</p>
+
+        <p>I have read the above release and waiver of liability and fully understand its contents. I voluntarily agree with the terms and conditions stated above.</p>
+      </div>
+
+      <form id="waiverForm" class="waiver-actions">
+        <label for="signatureName">Full Name / Signature</label>
+        <input type="text" id="signatureName" class="form-input" placeholder="Type your full name" required>
+
+        <label for="signedDate">Date Completed</label>
+        <input type="text" id="signedDate" class="form-input waiver-readonly" readonly>
+
+        <label>
+          <input type="checkbox" id="agreeCheckbox" required>
+          I agree to the terms and conditions above.
+        </label>
+
+        <button type="submit" class="btn btn--primary" id="submitWaiverBtn">Submit Waiver</button>
+      </form>
+
+      <div id="waiverError" class="waiver-error"></div>
+
+      <div id="waiverStatus" class="waiver-status hidden">
+        <h3>Waiver Completed</h3>
+        <p><strong>Name:</strong> <span id="savedName"></span></p>
+        <p><strong>Agreed:</strong> <span id="savedAgreed"></span></p>
+        <p><strong>Date:</strong> <span id="savedDate"></span></p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentUser = null;
+
+    function formatDate(dateValue) {
+      return new Date(dateValue).toLocaleDateString();
+    }
+
+    function showError(message) {
+      const errorBox = document.getElementById("waiverError");
+      errorBox.textContent = message;
+      errorBox.style.display = "block";
+    }
+
+    function hideError() {
+      const errorBox = document.getElementById("waiverError");
+      errorBox.textContent = "";
+      errorBox.style.display = "none";
+    }
+
+    function lockWaiverDisplay(data) {
+      document.getElementById("signatureName").value = data.fullName;
+      document.getElementById("signedDate").value = formatDate(data.signedAt);
+      document.getElementById("agreeCheckbox").checked = data.agreed;
+
+      document.getElementById("signatureName").readOnly = true;
+      document.getElementById("agreeCheckbox").disabled = true;
+      document.getElementById("submitWaiverBtn").disabled = true;
+
+      document.getElementById("signatureName").classList.add("waiver-readonly");
+      document.getElementById("submitWaiverBtn").textContent = "Waiver Already Submitted";
+
+      document.getElementById("savedName").textContent = data.fullName;
+      document.getElementById("savedAgreed").textContent = data.agreed ? "Yes" : "No";
+      document.getElementById("savedDate").textContent = formatDate(data.signedAt);
+      document.getElementById("waiverStatus").classList.remove("hidden");
+    }
+
+    async function loadExistingWaiver() {
+      try {
+        const res = await fetch("/api/waiver");
+
+        if (res.status === 404) {
+          document.getElementById("signedDate").value = new Date().toLocaleDateString();
+          return;
+        }
+
+        if (!res.ok) {
+          throw new Error("Failed to load waiver");
+        }
+
+        const data = await res.json();
+        lockWaiverDisplay(data);
+      } catch (err) {
+        showError("Could not load waiver.");
+      }
+    }
+
+    async function applyRoleUI() {
+      try {
+        const res = await fetch("/api/me");
+
+        if (!res.ok) {
+          window.location.href = "/index.html";
+          return;
+        }
+
+        currentUser = await res.json();
+
+        if (currentUser.role === "member") {
+          const hideIds = ["nav-instructors", "nav-packages", "nav-customers"];
+          hideIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = "none";
+          });
+
+          const classesMenu = document.getElementById("nav-classes-menu");
+          if (classesMenu) {
+            classesMenu.innerHTML = `
+              <a href="class-checkin.html">Class Check-In</a>
+            `;
+          }
+        }
+
+        await loadExistingWaiver();
+      } catch (err) {
+        window.location.href = "/index.html";
+      }
+    }
+
+    document.getElementById("waiverForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      hideError();
+
+      const fullName = document.getElementById("signatureName").value.trim();
+      const agreed = document.getElementById("agreeCheckbox").checked;
+
+      if (!fullName) {
+        showError("Please enter your full name.");
+        return;
+      }
+
+      if (!agreed) {
+        showError("You must agree to the terms before submitting.");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/waiver", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            fullName,
+            agreed: true
+          })
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          throw new Error(result.message || "Failed to save waiver");
+        }
+
+        lockWaiverDisplay(result.waiver);
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+
+    document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        btn.parentElement.classList.toggle("open");
+      });
+    });
+
+    applyRoleUI();
+  </script>
+</body>
+</html>

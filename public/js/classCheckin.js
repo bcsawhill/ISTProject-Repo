@@ -4,7 +4,25 @@
 let selectedClass = null;
 let selectedInstructor = null;
 let attendees = [];
+let currentUser = null;
 
+// -----------------------------------------------------
+// LOAD CURRENT USER
+// -----------------------------------------------------
+async function loadCurrentUser() {
+  try {
+    const res = await fetch("/api/me");
+
+    if (!res.ok) {
+      window.location.href = "/index.html";
+      return;
+    }
+
+    currentUser = await res.json();
+  } catch (err) {
+    window.location.href = "/index.html";
+  }
+}
 
 // -----------------------------------------------------
 // LOAD CLASSES FOR DROPDOWN
@@ -16,11 +34,10 @@ async function loadClassesForDropdown() {
   const select = document.getElementById("select_class");
   select.innerHTML = "";
 
-  // Sort by day + time
-  const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const TIMES = [
-    "6AM","7AM","8AM","9AM","10AM","11AM",
-    "12PM","1PM","2PM","3PM","4PM","5PM","6PM","7PM"
+    "6AM", "7AM", "8AM", "9AM", "10AM", "11AM",
+    "12PM", "1PM", "2PM", "3PM", "4PM", "5PM", "6PM", "7PM"
   ];
 
   classes.sort((a, b) => {
@@ -36,7 +53,6 @@ async function loadClassesForDropdown() {
     select.appendChild(opt);
   });
 }
-
 
 // -----------------------------------------------------
 // INSTRUCTOR SEARCH-AS-YOU-TYPE (MODAL)
@@ -60,11 +76,13 @@ async function searchInstructorsModal(query) {
     results.forEach(i => {
       const div = document.createElement("div");
       div.textContent = `${i.firstName} ${i.lastName} (${i.instructorId})`;
+
       div.addEventListener("click", () => {
         document.getElementById("select_instructor").value = i.instructorId;
         selectedInstructor = i;
         box.classList.add("hidden");
       });
+
       box.appendChild(div);
     });
   }
@@ -85,7 +103,6 @@ document.addEventListener("click", (e) => {
   }
 });
 
-
 // -----------------------------------------------------
 // START CHECK-IN BUTTON
 // -----------------------------------------------------
@@ -96,9 +113,49 @@ document.getElementById("startCheckinBtn").addEventListener("click", async () =>
 
   await loadClassesForDropdown();
 
+  document.getElementById("select_instructor").value = "";
   document.getElementById("selectModal").classList.remove("hidden");
 });
 
+// -----------------------------------------------------
+// MEMBER SELF-CHECK-IN SETUP
+// -----------------------------------------------------
+async function setupMemberSelfCheckin() {
+  const searchInput = document.getElementById("customerSearch");
+  const resultsBox = document.getElementById("customerResults");
+
+  if (!currentUser || currentUser.role !== "member") {
+    searchInput.value = "";
+    searchInput.readOnly = false;
+    searchInput.disabled = false;
+    searchInput.placeholder = "Type to search...";
+    resultsBox.classList.add("hidden");
+    return;
+  }
+
+  searchInput.value = currentUser.customerId || "";
+  searchInput.readOnly = true;
+  searchInput.disabled = true;
+  searchInput.placeholder = "Only your account can be checked in";
+  resultsBox.classList.add("hidden");
+  resultsBox.innerHTML = "";
+
+  attendees = [];
+
+  try {
+    const res = await fetch(`/api/customer/${currentUser.customerId}`);
+
+    if (!res.ok) {
+      alert("Could not load your customer profile.");
+      return;
+    }
+
+    const me = await res.json();
+    addAttendee(me);
+  } catch (err) {
+    alert("Could not load your customer profile.");
+  }
+}
 
 // -----------------------------------------------------
 // CONTINUE BUTTON (AFTER SELECTING CLASS + INSTRUCTOR)
@@ -112,31 +169,40 @@ document.getElementById("continueBtn").addEventListener("click", async () => {
     return;
   }
 
-  // Load class details
   const res = await fetch(`/api/class/${classId}`);
   selectedClass = await res.json();
 
-  selectedInstructor = { instructorId };
+  if (!selectedInstructor || selectedInstructor.instructorId !== instructorId) {
+    selectedInstructor = { instructorId };
+  }
 
-  // Update UI
   document.getElementById("checkinTitle").textContent =
     `${selectedClass.dayOfWeek} ${selectedClass.time} – ${selectedClass.className}`;
 
   document.getElementById("checkinInstructor").textContent =
-    `Instructor: ${instructorId}`;
+    `Instructor: ${
+      selectedInstructor.firstName
+        ? `${selectedInstructor.firstName} ${selectedInstructor.lastName}`
+        : instructorId
+    }`;
 
-  // Switch screens
   document.getElementById("startScreen").classList.add("hidden");
   document.getElementById("checkinScreen").classList.remove("hidden");
   document.getElementById("selectModal").classList.add("hidden");
-});
 
+  await setupMemberSelfCheckin();
+});
 
 // -----------------------------------------------------
 // CUSTOMER SEARCH-AS-YOU-TYPE
 // -----------------------------------------------------
 async function searchCustomers(query) {
   const box = document.getElementById("customerResults");
+
+  if (currentUser && currentUser.role === "member") {
+    box.classList.add("hidden");
+    return;
+  }
 
   if (!query || query.trim() === "") {
     box.classList.add("hidden");
@@ -181,20 +247,22 @@ document.addEventListener("click", (e) => {
   }
 });
 
-
 // -----------------------------------------------------
 // ADD ATTENDEE (PREVENT DUPLICATES)
 // -----------------------------------------------------
 function addAttendee(customer) {
+  if (currentUser && currentUser.role === "member" && customer.customerId !== currentUser.customerId) {
+    alert("Members can only check in themselves.");
+    return;
+  }
+
   if (attendees.some(a => a.customerId === customer.customerId)) {
-    alert("This customer is already checked in.");
     return;
   }
 
   attendees.push(customer);
   renderAttendees();
 }
-
 
 // -----------------------------------------------------
 // RENDER ATTENDEE LIST
@@ -207,21 +275,23 @@ function renderAttendees() {
     const li = document.createElement("li");
     li.textContent = `${c.firstName} ${c.lastName} (${c.customerId})`;
 
-    const removeBtn = document.createElement("button");
-    removeBtn.textContent = "Remove";
-    removeBtn.className = "btn btn--danger btn--small";
-    removeBtn.style.marginLeft = "1rem";
+    if (!currentUser || currentUser.role !== "member") {
+      const removeBtn = document.createElement("button");
+      removeBtn.textContent = "Remove";
+      removeBtn.className = "btn btn--danger btn--small";
+      removeBtn.style.marginLeft = "1rem";
 
-    removeBtn.addEventListener("click", () => {
-      attendees = attendees.filter(a => a.customerId !== c.customerId);
-      renderAttendees();
-    });
+      removeBtn.addEventListener("click", () => {
+        attendees = attendees.filter(a => a.customerId !== c.customerId);
+        renderAttendees();
+      });
 
-    li.appendChild(removeBtn);
+      li.appendChild(removeBtn);
+    }
+
     list.appendChild(li);
   });
 }
-
 
 // -----------------------------------------------------
 // SUBMIT CLASS RECORD
@@ -229,6 +299,20 @@ function renderAttendees() {
 document.getElementById("submitRecordBtn").addEventListener("click", async () => {
   if (!selectedClass || !selectedInstructor) {
     alert("Missing class or instructor.");
+    return;
+  }
+
+  if (attendees.length === 0) {
+    alert("No attendees selected.");
+    return;
+  }
+
+  if (
+    currentUser &&
+    currentUser.role === "member" &&
+    (attendees.length !== 1 || attendees[0].customerId !== currentUser.customerId)
+  ) {
+    alert("Members can only check in themselves.");
     return;
   }
 
@@ -254,10 +338,14 @@ document.getElementById("submitRecordBtn").addEventListener("click", async () =>
   if (res.ok) {
     alert("Class record submitted!");
 
-    // Reset UI
     attendees = [];
     selectedClass = null;
     selectedInstructor = null;
+
+    document.getElementById("customerSearch").value = "";
+    document.getElementById("customerSearch").readOnly = false;
+    document.getElementById("customerSearch").disabled = false;
+    document.getElementById("customerSearch").placeholder = "Type to search...";
 
     document.getElementById("checkinScreen").classList.add("hidden");
     document.getElementById("startScreen").classList.remove("hidden");
@@ -265,7 +353,6 @@ document.getElementById("submitRecordBtn").addEventListener("click", async () =>
     alert("Failed to submit record.");
   }
 });
-
 
 // -----------------------------------------------------
 // CANCEL CHECK-IN
@@ -275,10 +362,14 @@ document.getElementById("cancelCheckinBtn").addEventListener("click", () => {
   selectedClass = null;
   selectedInstructor = null;
 
+  document.getElementById("customerSearch").value = "";
+  document.getElementById("customerSearch").readOnly = false;
+  document.getElementById("customerSearch").disabled = false;
+  document.getElementById("customerSearch").placeholder = "Type to search...";
+
   document.getElementById("checkinScreen").classList.add("hidden");
   document.getElementById("startScreen").classList.remove("hidden");
 });
-
 
 // -----------------------------------------------------
 // CLOSE SELECT MODAL
@@ -286,3 +377,8 @@ document.getElementById("cancelCheckinBtn").addEventListener("click", () => {
 document.getElementById("closeSelectModal").addEventListener("click", () => {
   document.getElementById("selectModal").classList.add("hidden");
 });
+
+// -----------------------------------------------------
+// INITIAL LOAD
+// -----------------------------------------------------
+loadCurrentUser();

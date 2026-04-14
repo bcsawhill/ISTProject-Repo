@@ -10,7 +10,7 @@
 <body class="layout--sidebar">
   <aside class="sidebar">
     <a class="logo-wrap" href="dashboard.html">
-      <img src="../images/Logo.png" class="logo">
+      <img src="../images/HomLogo.png" class="logo">
     </a>
     <nav class="nav">
 
@@ -73,6 +73,28 @@
 
   <script src="../js/packageSales.js"></script>
   <script>
+
+    async function protectStaffAdminPage() {
+      try {
+        const res = await fetch("/api/me");
+
+        if (!res.ok) {
+          window.location.href = "/index.html";
+          return;
+        }
+
+        const user = await res.json();
+
+        if (!["admin", "staff"].includes(user.role)) {
+          window.location.href = "/htmls/member-dashboard.html";
+        }
+      } catch (err) {
+        window.location.href = "/index.html";
+      }
+    }
+
+    protectStaffAdminPage();
+
     document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         btn.parentElement.classList.toggle("open");
