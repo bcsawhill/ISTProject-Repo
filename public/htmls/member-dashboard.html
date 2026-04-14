@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YogiTrack • Member Dashboard</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+  <div class="background">
+    <div class="overlay">
+      <div class="layout--sidebar">
+        <aside class="sidebar">
+          <a class="logo-wrap" href="member-dashboard.html">
+            <img src="../images/HomLogo.png" alt="YogiTrack Logo" class="logo" />
+          </a>
+
+          <nav class="nav">
+            <div class="nav-dropdown open">
+              <button class="nav-dropdown-btn">Classes ▾</button>
+              <div class="nav-dropdown-menu">
+                <a href="class-checkin.html">Class Check-In</a>
+              </div>
+            </div>
+
+            <div>
+              <a href="waiver.html">Waiver</a>
+            </div>
+
+            <a href="../index.html">Log Out</a>
+          </nav>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function protectMemberDashboard() {
+      try {
+        const res = await fetch("/api/me");
+
+        if (!res.ok) {
+          window.location.href = "/index.html";
+          return;
+        }
+
+        const user = await res.json();
+
+        if (user.role !== "member") {
+          window.location.href = "/htmls/dashboard.html";
+        }
+      } catch (err) {
+        window.location.href = "/index.html";
+      }
+    }
+
+    document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        btn.parentElement.classList.toggle("open");
+      });
+    });
+
+    protectMemberDashboard();
+  </script>
+</body>
+</html>

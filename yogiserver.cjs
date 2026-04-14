@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const User = require("./models/userModel.cjs");
 const session = require("express-session");
 const Customer = require("./models/customerModel.cjs");
+const Waiver = require("./models/waiverModel.cjs");
 
 const app = express();
 
@@ -142,7 +143,11 @@ app.post("/login", async (req, res) => {
       customerId: user.customerId,
     };
 
-    return res.redirect("/htmls/dashboard.html");
+    if (user.role === "admin" || user.role === "staff") {
+      return res.redirect("/htmls/dashboard.html");
+    }
+
+    return res.redirect("/htmls/member-dashboard.html");
   } catch (err) {
     console.error("Login error:", err);
     return res.redirect("/index.html?error=login_failed");
@@ -167,7 +172,6 @@ function requireAdmin(req, res, next) {
 
   next();
 }
-
 
 // Check all users and roles
 app.get("/check-users", async (req, res) => {
@@ -227,6 +231,66 @@ app.post("/api/user-role/:customerId", requireAdmin, async (req, res) => {
   } catch (err) {
     console.error("Update user role error:", err);
     res.status(500).json({ error: "Error updating role" });
+  }
+});
+
+app.get("/api/waiver", requireLogin, async (req, res) => {
+  try {
+    const waiver = await Waiver.findOne({ customerId: req.session.user.customerId });
+
+    if (!waiver) {
+      return res.status(404).json({ message: "No waiver found" });
+    }
+
+    res.json({
+      customerId: waiver.customerId,
+      fullName: waiver.fullName,
+      agreed: waiver.agreed,
+      signedAt: waiver.signedAt
+    });
+  } catch (err) {
+    console.error("Get waiver error:", err);
+    res.status(500).json({ message: "Failed to load waiver" });
+  }
+});
+
+app.post("/api/waiver", requireLogin, async (req, res) => {
+  try {
+    const { fullName, agreed } = req.body;
+
+    if (!fullName || agreed !== true) {
+      return res.status(400).json({ message: "Full name and agreement are required" });
+    }
+
+    const existingWaiver = await Waiver.findOne({
+      customerId: req.session.user.customerId
+    });
+
+    if (existingWaiver) {
+      return res.status(409).json({ message: "Waiver already completed" });
+    }
+
+    const waiver = new Waiver({
+      customerId: req.session.user.customerId,
+      fullName: fullName.trim(),
+      agreed: true,
+      signedAt: new Date()
+    });
+
+    await waiver.save();
+
+    res.status(201).json({
+      message: "Waiver saved successfully",
+      waiver: {
+        customerId: waiver.customerId,
+        fullName: waiver.fullName,
+        agreed: waiver.agreed,
+        signedAt: waiver.signedAt
+      }
+    });
+  } catch (err) {
+    console.error("Save waiver error:", err);
+    res.status(500).json({ message: "Failed to save waiver" });
   }
 });
 
