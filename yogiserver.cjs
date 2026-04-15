@@ -143,12 +143,11 @@ app.post("/login", async (req, res) => {
       customerId: user.customerId,
     };
 
-    if (user.role === "admin" || user.role === "staff") {
-      return res.redirect("/htmls/dashboard.html");
-    }
-
-    return res.redirect("/htmls/member-dashboard.html");
-  } catch (err) {
+    if (!["admin", "staff", "instructor", "member"].includes(role)) {
+      return res.status(400).json({ error: "Invalid role" });
+  }
+  }
+   catch (err) {
     console.error("Login error:", err);
     return res.redirect("/index.html?error=login_failed");
   }

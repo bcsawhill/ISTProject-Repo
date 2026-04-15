@@ -111,6 +111,7 @@
             <label>User Role</label>
             <select id="edit_role">
               <option value="member">Member</option>
+              <option value="instructor">Instructor</option>
               <option value="staff">Staff</option>
               <option value="admin">Admin</option>
             </select>
@@ -137,7 +138,7 @@
 
         const user = await res.json();
 
-        if (!["admin", "staff"].includes(user.role)) {
+        if (!["admin", "staff", "instructor"].includes(user.role)) {
           window.location.href = "/htmls/member-dashboard.html";
         }
       } catch (err) {

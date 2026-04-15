@@ -61,49 +61,93 @@
     </div>
   </div>
 
-  <script>
-    async function applyRoleUI() {
-      try {
-        const res = await fetch("/api/me");
-
-        if (!res.ok) {
-          window.location.href = "/index.html";
-          return;
-        }
-
-        const user = await res.json();
-
-        if (user.role === "member") {
-          const hideIds = [
-            "nav-instructors",
-            "nav-packages",
-            "nav-customers"
-          ];
-
-          hideIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = "none";
-          });
-
-          const classesMenu = document.querySelector("#nav-classes .nav-dropdown-menu");
-          if (classesMenu) {
-            classesMenu.innerHTML = `
-              <a href="class-checkin.html">Class Check-In</a>
-            `;
-          }
-        }
-      } catch (err) {
-        window.location.href = "/index.html";
-      }
+ <script>
+async function applyRoleUI() {
+  try {
+    const res = await fetch("/api/me");
+    if (!res.ok) {
+      window.location.href = "/index.html";
+      return;
     }
 
-    document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        btn.parentElement.classList.toggle("open");
-      });
-    });
+    const user = await res.json();
 
-    applyRoleUI();
-  </script>
+    const navInstructors = document.getElementById("nav-instructors");
+    const navPackages = document.querySelector("#nav-packages .nav-dropdown-menu");
+    const navClasses = document.querySelector("#nav-classes .nav-dropdown-menu");
+    const navCustomers = document.querySelector("#nav-customers .nav-dropdown-menu");
+    const navWaiver = document.getElementById("nav-waiver-link");
+
+    if (user.role === "member") {
+      ["nav-instructors", "nav-packages", "nav-customers"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+      });
+
+      if (navClasses) {
+        navClasses.innerHTML = `<a href="class-checkin.html">Class Check-In</a>`;
+      }
+      return;
+    }
+
+    if (navWaiver) {
+      navWaiver.style.display = "none";
+    }
+
+    if (user.role === "staff") {
+      if (navInstructors) navInstructors.style.display = "none";
+
+      if (navPackages) {
+        navPackages.innerHTML = `
+          <a href="package-sale.html">Package Sale</a>
+          <a href="package-sales.html">Package Records</a>
+        `;
+      }
+
+      if (navClasses) {
+        navClasses.innerHTML = `
+          <a href="class-checkin.html">Class Check-In</a>
+          <a href="class-records.html">Class Records</a>
+        `;
+      }
+
+      return;
+    }
+
+    if (user.role === "instructor") {
+      if (navInstructors) navInstructors.style.display = "none";
+
+      if (navPackages) {
+        navPackages.innerHTML = `
+          <a href="package-sale.html">Package Sale</a>
+        `;
+      }
+
+      if (navClasses) {
+        navClasses.innerHTML = `
+          <a href="class-checkin.html">Class Check-In</a>
+        `;
+      }
+
+      if (navCustomers) {
+        navCustomers.innerHTML = `
+          <a href="customers.html">Add New Customer</a>
+          <a href="customers-search.html">Search/Edit Customer</a>
+        `;
+      }
+    }
+  } catch (err) {
+    window.location.href = "/index.html";
+  }
+}
+
+document.querySelectorAll(".nav-dropdown-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    btn.parentElement.classList.toggle("open");
+  });
+});
+
+applyRoleUI();
+</script>
 </body>
 </html>
