@@ -61,8 +61,10 @@
           <tr>
             <th>Sale ID</th>
             <th>Customer ID</th>
-            <th>Package ID</th>
+            <th>Package</th>
+            <th>Type</th>
             <th>Date</th>
+            <th>Expires</th>
             <th>Price Paid</th>
           </tr>
         </thead>
@@ -85,7 +87,7 @@
 
         const user = await res.json();
 
-        if (!["admin", "staff"].includes(user.role)) {
+        if (!["admin", "staff", "instructor"].includes(user.role)) {
           window.location.href = "/htmls/member-dashboard.html";
         }
       } catch (err) {

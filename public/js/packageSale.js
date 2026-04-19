@@ -4,10 +4,11 @@ async function loadCustomers() {
 
   const select = document.getElementById("customerSelect");
   select.innerHTML = "";
-  customers.forEach(c => {
+
+  customers.forEach((customer) => {
     const opt = document.createElement("option");
-    opt.value = c.customerId;
-    opt.textContent = `${c.firstName} ${c.lastName} (${c.customerId})`;
+    opt.value = customer.customerId;
+    opt.textContent = `${customer.firstName} ${customer.lastName} (${customer.customerId})`;
     select.appendChild(opt);
   });
 }
@@ -18,10 +19,11 @@ async function loadPackages() {
 
   const select = document.getElementById("packageSelect");
   select.innerHTML = "";
-  packages.forEach(p => {
+
+  packages.forEach((pkg) => {
     const opt = document.createElement("option");
-    opt.value = p.packageId;
-    opt.textContent = `${p.packageName} - $${p.price}`;
+    opt.value = pkg.packageId;
+    opt.textContent = `${pkg.packageName} - $${pkg.price}`;
     select.appendChild(opt);
   });
 }
@@ -38,12 +40,17 @@ document.getElementById("completeSaleBtn").addEventListener("click", async () =>
   const res = await fetch("/api/package/sale", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ customerId, packageId })
+    body: JSON.stringify({ customerId, packageId }),
   });
 
   const result = await res.json();
+
   if (res.ok) {
-    alert(result.message);
+    const expiresText = result.sale?.expiresAt
+      ? new Date(result.sale.expiresAt).toLocaleDateString()
+      : "N/A";
+
+    alert(`${result.message}\nExpires on: ${expiresText}`);
   } else {
     alert(result.message || "Failed to record sale");
   }

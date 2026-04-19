@@ -8,6 +8,7 @@ router.put("/update/:packageId", packageController.updatePackage);
 router.delete("/delete/:packageId", packageController.deletePackage);
 
 router.post("/sale", packageController.recordSale);
+router.get("/sales/customer/:customerId", packageController.getSalesByCustomer);
 router.get("/sales", packageController.getSales);
 
 module.exports = router;

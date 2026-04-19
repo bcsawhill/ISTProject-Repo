@@ -84,6 +84,7 @@
                   <label class="custinfolabel" for="role">User Role:</label>
                     <select id="role" name="role">
                       <option value="member">Member</option>
+                      <option value="instructor">Instructor</option>
                       <option value="staff">Staff</option>
                       <option value="admin">Admin</option>
                     </select>
@@ -126,7 +127,7 @@ async function showRoleForAdmins() {
 
         const user = await res.json();
 
-        if (!["admin", "staff"].includes(user.role)) {
+        if (!["admin", "staff", "instructor"].includes(user.role)) {
           window.location.href = "/htmls/member-dashboard.html";
         }
       } catch (err) {

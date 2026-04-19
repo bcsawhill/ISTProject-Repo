@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 require("../config/mongodbconn.cjs");
 
-const customerModel = new mongoose.Schema({
+const customerModel = new mongoose.Schema(
+  {
     customerId: { type: String, required: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
@@ -10,8 +11,13 @@ const customerModel = new mongoose.Schema({
     address: { type: String, default: "" },
     classBalance: { type: Number, default: 0 },
     senior: { type: Boolean, default: false },
+
+    packageExpires: { type: Date, default: null },
+
     unlimitedActive: { type: Boolean, default: false },
-    unlimitedExpires: { type: Date, default: null }
-}, { collection: "customer" });
+    unlimitedExpires: { type: Date, default: null },
+  },
+  { collection: "customer" }
+);
 
 module.exports = mongoose.model("Customer", customerModel);

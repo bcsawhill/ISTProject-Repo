@@ -1,3 +1,7 @@
+function formatDate(value) {
+  return value ? new Date(value).toLocaleDateString() : "—";
+}
+
 async function loadSales() {
   const res = await fetch("/api/package/sales");
   const sales = await res.json();
@@ -5,15 +9,22 @@ async function loadSales() {
   const tbody = document.querySelector("#salesTable tbody");
   tbody.innerHTML = "";
 
-  sales.forEach(s => {
+  sales.forEach((sale) => {
+    const typeText = sale.isUnlimited
+      ? "Unlimited"
+      : `${sale.classCount || 0} Classes`;
+
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td>${s.saleId}</td>
-      <td>${s.customerId}</td>
-      <td>${s.packageId}</td>
-      <td>${new Date(s.date).toLocaleDateString()}</td>
-      <td>$${s.pricePaid.toFixed(2)}</td>
+      <td>${sale.saleId}</td>
+      <td>${sale.customerId}</td>
+      <td>${sale.packageName || sale.packageId}</td>
+      <td>${typeText}</td>
+      <td>${formatDate(sale.date)}</td>
+      <td>${formatDate(sale.expiresAt)}</td>
+      <td>$${Number(sale.pricePaid || 0).toFixed(2)}</td>
     `;
+
     tbody.appendChild(row);
   });
 }
