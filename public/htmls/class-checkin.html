@@ -96,47 +96,7 @@
 </div>
 
   <script src="../js/classCheckin.js"></script>
-
-  <script>
-    async function protectLoggedInPage() {
-      try {
-        const res = await fetch("/api/me");
-
-        if (!res.ok) {
-          window.location.href = "/index.html";
-          return;
-        }
-
-        const user = await res.json();
-
-        if (user.role === "member") {
-          const hideIds = ["nav-instructors", "nav-packages", "nav-customers"];
-
-          hideIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = "none";
-          });
-
-          const classesMenu = document.getElementById("nav-classes-menu");
-          if (classesMenu) {
-            classesMenu.innerHTML = `
-              <a href="class-checkin.html">Class Check-In</a>
-            `;
-          }
-        }
-      } catch (err) {
-        window.location.href = "/index.html";
-      }
-    }
-
-    protectLoggedInPage();
-
-    document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        btn.parentElement.classList.toggle("open");
-      });
-    });
-  </script>
+  <script src="../js/sidebarRoleUI.js"></script>
 
 </body>
 </html>

@@ -82,33 +82,6 @@
     </div>
   </div>
 
-  <script>
-    async function protectMemberDashboard() {
-      try {
-        const res = await fetch("/api/me");
-
-        if (!res.ok) {
-          window.location.href = "/index.html";
-          return;
-        }
-
-        const user = await res.json();
-
-        if (user.role !== "member") {
-          window.location.href = "/htmls/dashboard.html";
-        }
-      } catch (err) {
-        window.location.href = "/index.html";
-      }
-    }
-
-    document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        btn.parentElement.classList.toggle("open");
-      });
-    });
-
-    protectMemberDashboard();
-  </script>
+ <script src="../js/sidebarRoleUI.js"></script>
 </body>
 </html>

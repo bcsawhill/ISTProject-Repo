@@ -5,20 +5,20 @@ const User = require("./models/userModel.cjs");
 const MONGODB_URI =
   "mongodb+srv://dmancini1999_db_user:eRifJAmRYwICGs5N@cluster0.uljjn4c.mongodb.net/yogidb?retryWrites=true&w=majority";
 
-async function createAdmin() {
+async function createadmin() {
   try {
     console.log("Starting admin creation...");
 
     await mongoose.connect(MONGODB_URI);
     console.log("Connected to MongoDB");
 
-    const username = "admin";
+    const username = "admin1";
     const password = "admin123";
 
     const existingUser = await User.findOne({ username });
 
     if (existingUser) {
-      console.log("Admin already exists");
+      console.log("admin1 already exists");
       await mongoose.connection.close();
       process.exit(0);
     }
@@ -32,8 +32,8 @@ async function createAdmin() {
       customerId: null,
     });
 
-    console.log("Admin created successfully");
-    console.log("Username: admin");
+    console.log("admin1 created successfully");
+    console.log("Username: admin1");
     console.log("Password: admin123");
 
     await mongoose.connection.close();
@@ -44,4 +44,4 @@ async function createAdmin() {
   }
 }
 
-createAdmin();
+createadmin();

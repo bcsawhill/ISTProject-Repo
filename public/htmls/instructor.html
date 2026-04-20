@@ -88,34 +88,6 @@
   </main>
 
 <script src="../js/instructor.js"></script>
-<script>
-  async function protectAdminPage() {
-    try {
-      const res = await fetch("/api/me");
-
-      if (!res.ok) {
-        window.location.href = "/index.html";
-        return;
-      }
-
-      const user = await res.json();
-
-      if (user.role !== "admin") {
-        window.location.href = "/htmls/dashboard.html";
-        return;
-      }
-    } catch (err) {
-      window.location.href = "/index.html";
-    }
-  }
-
-  protectAdminPage();
-
-  document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      btn.parentElement.classList.toggle("open");
-    });
-  });
-</script>
+<script src="../js/sidebarRoleUI.js"></script>
 </body>
 </html>

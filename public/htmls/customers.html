@@ -96,54 +96,8 @@
   </main>
 
 <script src="../js/customer.js"></script>
-<script>
-async function showRoleForAdmins() {
-    try {
-      const res = await fetch("/api/me");
-      if (!res.ok) return;
+<script src="../js/sidebarRoleUI.js"></script>
 
-      const user = await res.json();
-      if (user.role === "admin") {
-        const roleField = document.getElementById("roleFieldWrapper");
-        if (roleField) {
-          roleField.style.display = "block";
-        }
-      }
-    } catch (err) {
-      console.error("Could not load current user:", err);
-    }
-  }
-
-  showRoleForAdmins();
-
-  async function protectStaffAdminPage() {
-      try {
-        const res = await fetch("/api/me");
-
-        if (!res.ok) {
-          window.location.href = "/index.html";
-          return;
-        }
-
-        const user = await res.json();
-
-        if (!["admin", "staff", "instructor"].includes(user.role)) {
-          window.location.href = "/htmls/member-dashboard.html";
-        }
-      } catch (err) {
-        window.location.href = "/index.html";
-      }
-    }
-
-    protectStaffAdminPage();
-
-  document.querySelectorAll(".nav-dropdown-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      btn.parentElement.classList.toggle("open");
-    });
-  });
-</script>
 </body>
 </html>
 

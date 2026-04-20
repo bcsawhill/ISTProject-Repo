@@ -143,15 +143,17 @@ app.post("/login", async (req, res) => {
       customerId: user.customerId,
     };
 
-    if (!["admin", "staff", "instructor", "member"].includes(role)) {
-      return res.status(400).json({ error: "Invalid role" });
-  }
-  }
-   catch (err) {
+    if (user.role === "admin" || user.role === "staff" || user.role === "instructor") {
+      return res.redirect("/htmls/dashboard.html");
+    }
+
+    return res.redirect("/htmls/member-dashboard.html");
+  } catch (err) {
     console.error("Login error:", err);
     return res.redirect("/index.html?error=login_failed");
   }
 });
+
 
 function requireLogin(req, res, next) {
   if (!req.session.user) {
@@ -209,7 +211,7 @@ app.post("/api/user-role/:customerId", requireAdmin, async (req, res) => {
   try {
     const { role } = req.body;
 
-    if (!["admin", "staff", "member"].includes(role)) {
+    if (!["admin", "staff", "instructor", "member"].includes(role)) {
       return res.status(400).json({ error: "Invalid role" });
     }
 
@@ -232,6 +234,7 @@ app.post("/api/user-role/:customerId", requireAdmin, async (req, res) => {
     res.status(500).json({ error: "Error updating role" });
   }
 });
+
 
 app.get("/api/waiver", requireLogin, async (req, res) => {
   try {
