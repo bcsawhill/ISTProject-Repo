@@ -9,7 +9,9 @@
 <body>
   <div class="background">
     <div class="overlay">
-      <div class="layout--sidebar">
+      <div class="layout--sidebar" style="display:flex; min-height:100vh;">
+
+        <!-- SIDEBAR -->
         <aside class="sidebar">
           <a class="logo-wrap" href="member-dashboard.html">
             <img src="../images/HomLogo.png" alt="YogiTrack Logo" class="logo" />
@@ -28,60 +30,68 @@
             </div>
 
             <a href="../index.html">Log Out</a>
-
-    <main class="layout--center">
-  <div class="card card--wide">
-    <h1 class="page-title">Member Dashboard</h1>
-
-    <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1rem;">
-      <div>
-        <h3>Class Balance</h3>
-        <p id="classBalanceValue">--</p>
-      </div>
-
-      <div>
-        <h3>Class Package Expires</h3>
-        <p id="packageExpiresValue">--</p>
-      </div>
-
-      <div>
-        <h3>Unlimited Pass</h3>
-        <p id="unlimitedStatusValue">--</p>
-      </div>
-
-      <div>
-        <h3>Unlimited Expires</h3>
-        <p id="unlimitedExpiresValue">--</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="card card--wide">
-    <h2>Package Purchase History</h2>
-
-    <table id="purchaseHistoryTable">
-      <thead>
-        <tr>
-          <th>Package</th>
-          <th>Type</th>
-          <th>Sold On</th>
-          <th>Expires On</th>
-          <th>Price</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</main>
-
-<script src="../js/memberDashboard.js"></script>        
-
           </nav>
         </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="layout--center" style="flex:1; padding:2rem;">
+
+          <!-- DASHBOARD STATS -->
+          <div class="card card--wide" style="margin-bottom:2rem;">
+            <h1 class="page-title">Member Dashboard</h1>
+
+            <div style="
+              display:grid;
+              grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+              gap:1.5rem;
+              margin-top:1rem;
+            ">
+              <div>
+                <h3>Class Balance</h3>
+                <p id="classBalanceValue">--</p>
+              </div>
+
+              <div>
+                <h3>Class Package Expires</h3>
+                <p id="packageExpiresValue">--</p>
+              </div>
+
+              <div>
+                <h3>Unlimited Pass</h3>
+                <p id="unlimitedStatusValue">--</p>
+              </div>
+
+              <div>
+                <h3>Unlimited Expires</h3>
+                <p id="unlimitedExpiresValue">--</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- PURCHASE HISTORY -->
+          <div class="card card--wide">
+            <h2>Package Purchase History</h2>
+
+            <table id="purchaseHistoryTable" style="width:100%; margin-top:1rem; border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th>Package</th>
+                  <th>Type</th>
+                  <th>Sold On</th>
+                  <th>Expires On</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+        </main>
       </div>
     </div>
   </div>
 
- <script src="../js/sidebarRoleUI.js"></script>
+  <script src="../js/memberDashboard.js"></script>
+  <script src="../js/sidebarRoleUI.js"></script>
 </body>
 </html>
