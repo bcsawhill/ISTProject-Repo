@@ -11,12 +11,12 @@ function parseReportDate(dateValue) {
 
   const stringValue = String(dateValue);
 
-  // For class records stored like YYYY-MM-DD
+  // Handles class record dates stored like YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(stringValue)) {
     return new Date(`${stringValue}T12:00:00`);
   }
 
-  // For Mongo Date values / ISO strings
+  // Handles Mongo/ISO date strings
   const parsed = new Date(stringValue);
   if (Number.isNaN(parsed.getTime())) {
     return null;
@@ -116,20 +116,18 @@ async function loadReports() {
   const start = new Date(`${startValue}T00:00:00`);
   const end = new Date(`${endValue}T23:59:59`);
 
-  const [salesRes, recordsRes, customersRes] = await Promise.all([
+  const [salesRes, recordsRes] = await Promise.all([
     fetch("/api/package/sales"),
-    fetch("/api/classRecord/all"),
-    fetch("/api/customer/search?q=")
+    fetch("/api/classRecord/all")
   ]);
 
-  if (!salesRes.ok || !recordsRes.ok || !customersRes.ok) {
+  if (!salesRes.ok || !recordsRes.ok) {
     alert("Failed to load report data.");
     return;
   }
 
   const sales = await salesRes.json();
   const records = await recordsRes.json();
-  const customers = await customersRes.json();
 
   const filteredSales = sales.filter((sale) => isDateInRange(sale.date, start, end));
   const filteredRecords = records.filter((record) => isDateInRange(record.date, start, end));
@@ -144,15 +142,21 @@ async function loadReports() {
     0
   );
 
-  const unusedBalanceTotal = customers.reduce(
-    (sum, customer) => sum + Number(customer.classBalance || 0),
-    0
-  );
-
-  const attendanceSoldTotal = sales.reduce((sum, sale) => {
+  const attendanceSoldTotal = filteredSales.reduce((sum, sale) => {
     if (sale.isUnlimited) return sum;
     return sum + Number(sale.classCount || 0);
   }, 0);
+
+  const attendanceUsedAgainstPackages = filteredRecords.reduce((sum, record) => {
+    const attendeeCount = (record.attendees || []).length;
+    const noPackageCount = (record.noPackageAttendees || []).length;
+    return sum + Math.max(attendeeCount - noPackageCount, 0);
+  }, 0);
+
+  const unusedBalanceTotal = Math.max(
+    attendanceSoldTotal - attendanceUsedAgainstPackages,
+    0
+  );
 
   document.getElementById("revenueTotal").textContent = formatCurrency(revenueTotal);
   document.getElementById("attendanceTotal").textContent = String(attendanceTotal);
