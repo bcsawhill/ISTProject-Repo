@@ -49,78 +49,79 @@
         </div>
       </div>
 
+      <div id="nav-waiver-link">
+        <a href="waiver.html">Waiver</a>
+      </div>
+
       <a href="../index.html">Log Out</a>
     </nav>
   </aside>
 
   <main class="layout--center">
+    <div class="instructorSearchContainer">
+      <div class="card card--wide">
 
-  <div class="instructorSearchContainer">
-  <div class="card card--wide">
+        <h1 class="page-title">Search Instructors</h1>
 
-    <h1 class="page-title">Search Instructors</h1>
+        <div class="search-bar-container">
+          <input type="text" id="searchInput" class="search-input"
+                 placeholder="Search by name, email, or phone">
+        </div>
 
-    <div class="search-bar-container">
-      <input type="text" id="searchInput" class="search-input"
-             placeholder="Search by name, email, or phone">
+        <table class="results-table" id="resultsTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Address</th>
+              <th>Preferred Contact</th>
+              <th>Edit</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+      </div>
     </div>
 
-    <table class="results-table" id="resultsTable">
-      <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Address</th>
-            <th>Preferred Contact</th>
-            <th>Edit</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div id="editModal" class="modal hidden">
+      <div class="modal-content card">
+        <h2>Edit Instructor</h2>
 
-  </div>
-</div>
+        <form id="editForm">
+          <input type="hidden" id="edit_instructorId">
 
-  <!-- Edit Modal -->
-  <div id="editModal" class="modal hidden">
-    <div class="modal-content card">
-      <h2>Edit Instructor</h2>
+          <label>First Name</label>
+          <input type="text" id="edit_firstName">
 
-      <form id="editForm">
-        <input type="hidden" id="edit_instructorId">
+          <label>Last Name</label>
+          <input type="text" id="edit_lastName">
 
-        <label>First Name</label>
-        <input type="text" id="edit_firstName">
+          <label>Email</label>
+          <input type="email" id="edit_email">
 
-        <label>Last Name</label>
-        <input type="text" id="edit_lastName">
+          <label>Phone</label>
+          <input type="tel" id="edit_phone">
 
-        <label>Email</label>
-        <input type="email" id="edit_email">
+          <label>Address</label>
+          <textarea id="edit_address"></textarea>
 
-        <label>Phone</label>
-        <input type="tel" id="edit_phone">
+          <fieldset>
+            <legend>Preferred Contact</legend>
+            <div class="radio-row">
+              <label><input type="radio" name="pref" value="phone">Phone</label>
+              <label><input type="radio" name="pref" value="email">Email</label>
+            </div>
+          </fieldset>
 
-        <label>Address</label>
-        <textarea id="edit_address"></textarea>
-
-        <fieldset>
-                  <legend>Preferred Contact</legend>
-                   <div class="radio-row">
-                    <label><input type="radio" name="pref" value="phone">Phone</label>
-                    <label><input type="radio" name="pref" value="email">Email</label>
-                   </div>
-        </fieldset>
-
-        <button type="submit" class="btn">Save Changes</button>
-        <button type="button" id="closeModal" class="btn">Cancel</button>
-      </form>
+          <button type="submit" class="btn">Save Changes</button>
+          <button type="button" id="closeModal" class="btn">Cancel</button>
+        </form>
+      </div>
     </div>
-  </div>
-
-</main>
+  </main>
 
   <script src="../js/instructorSearch.js"></script>
   <script src="../js/sidebarRoleUI.js"></script>

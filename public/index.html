@@ -20,6 +20,10 @@
       <button class="btn btn--primary" type="submit">Login</button>
     </form>
 
+    <p style="margin-top: 12px;">
+      <a href="/htmls/forgot-password.html">Forgot password?</a>
+    </p>
+
     <hr>
 
     <h2>Create Account</h2>
@@ -39,6 +43,8 @@
         message = "Invalid username or password.";
       } else if (error === "missing_fields") {
         message = "Please fill in all required fields.";
+      } else if (error === "account_inactive") {
+        message = "This account is inactive. Please contact an administrator.";
       }
 
       if (message) {

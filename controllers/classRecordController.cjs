@@ -13,12 +13,15 @@ function canSubmitCheckin(role) {
   return ["admin", "staff", "instructor", "member"].includes(role);
 }
 
-exports.getAll = async (req, res) => {
-  const records = await ClassRecord.find({});
-  res.json(records);
-};
+function getTodayString() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
-exports.getNextId = async (req, res) => {
+async function getNextRecordIdValue() {
   const last = await ClassRecord.find({}).sort({ recordId: -1 }).limit(1);
   let next = 1;
 
@@ -27,8 +30,69 @@ exports.getNextId = async (req, res) => {
     if (match) next = parseInt(match[0], 10) + 1;
   }
 
-  const recordId = `R${String(next).padStart(3, "0")}`;
-  res.json({ recordId });
+  return `R${String(next).padStart(3, "0")}`;
+}
+
+async function buildAttendeeDetails(attendeeIds = []) {
+  if (!attendeeIds.length) return [];
+
+  const customers = await Customer.find(
+    { customerId: { $in: attendeeIds } },
+    "customerId firstName lastName"
+  ).lean();
+
+  const byId = new Map(customers.map((c) => [c.customerId, c]));
+
+  return attendeeIds.map((id) => {
+    const customer = byId.get(id);
+    return customer || {
+      customerId: id,
+      firstName: id,
+      lastName: ""
+    };
+  });
+}
+
+exports.getAll = async (req, res) => {
+  try {
+    const records = await ClassRecord.find({}).sort({ date: -1, classTime: 1 });
+    res.json(records);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to load class records", error: err.message });
+  }
+};
+
+exports.getNextId = async (req, res) => {
+  try {
+    const recordId = await getNextRecordIdValue();
+    res.json({ recordId });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to get next record id", error: err.message });
+  }
+};
+
+exports.getTodayByClass = async (req, res) => {
+  try {
+    const date = getTodayString();
+
+    const record = await ClassRecord.findOne({
+      classId: req.params.classId,
+      date
+    }).lean();
+
+    if (!record) {
+      return res.json(null);
+    }
+
+    const attendeeDetails = await buildAttendeeDetails(record.attendees || []);
+
+    res.json({
+      ...record,
+      attendeeDetails
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to load today's class record", error: err.message });
+  }
 };
 
 exports.add = async (req, res) => {
@@ -38,27 +102,55 @@ exports.add = async (req, res) => {
       return res.status(403).json({ message: "Not allowed" });
     }
 
-    const { recordId, classId, instructorId, date, attendees = [] } = req.body;
-    const uniqueAttendees = [...new Set(attendees)];
+    const {
+      classId,
+      className = "",
+      classTime = "",
+      instructorId,
+      attendees = []
+    } = req.body;
 
-    if (!recordId || !classId || !instructorId || !date || uniqueAttendees.length === 0) {
+    const uniqueRequestedAttendees = [...new Set(attendees)];
+
+    if (!classId || !instructorId || uniqueRequestedAttendees.length === 0) {
       return res.status(400).json({ message: "Missing class record fields" });
     }
 
     if (
       role === "member" &&
-      (uniqueAttendees.length !== 1 || uniqueAttendees[0] !== req.session.user.customerId)
+      (uniqueRequestedAttendees.length !== 1 ||
+        uniqueRequestedAttendees[0] !== req.session.user.customerId)
     ) {
       return res.status(403).json({ message: "Members can only check in themselves" });
     }
 
+    const date = getTodayString();
+
+    let existingRecord = await ClassRecord.findOne({ classId, date });
+
+    const existingAttendeeIds = new Set(existingRecord?.attendees || []);
+    const newAttendeeIds = uniqueRequestedAttendees.filter(
+      (id) => !existingAttendeeIds.has(id)
+    );
+
+    if (existingRecord && newAttendeeIds.length === 0) {
+      const attendeeDetails = await buildAttendeeDetails(existingRecord.attendees || []);
+      return res.json({
+        message: "All selected customers are already checked in for this class today.",
+        record: {
+          ...existingRecord.toObject(),
+          attendeeDetails
+        }
+      });
+    }
+
     const customers = await Customer.find({
-      customerId: { $in: uniqueAttendees },
+      customerId: { $in: newAttendeeIds },
     });
 
-    if (customers.length !== uniqueAttendees.length) {
+    if (customers.length !== newAttendeeIds.length) {
       const found = new Set(customers.map((c) => c.customerId));
-      const missing = uniqueAttendees.filter((id) => !found.has(id));
+      const missing = newAttendeeIds.filter((id) => !found.has(id));
       return res.status(400).json({
         message: `Customer not found: ${missing.join(", ")}`,
       });
@@ -66,9 +158,9 @@ exports.add = async (req, res) => {
 
     const recordDate = new Date(`${date}T12:00:00`);
     const byId = new Map(customers.map((c) => [c.customerId, c]));
-    const invalidCustomers = [];
+    const noPackageAttendees = [];
 
-    for (const customerId of uniqueAttendees) {
+    for (const customerId of newAttendeeIds) {
       const customer = byId.get(customerId);
 
       syncCustomerPackageStatus(customer, recordDate);
@@ -89,30 +181,55 @@ exports.add = async (req, res) => {
         continue;
       }
 
-      invalidCustomers.push(customerId);
-    }
-
-    if (invalidCustomers.length > 0) {
-      return res.status(400).json({
-        message: `No valid package or class balance for: ${invalidCustomers.join(", ")}`,
-      });
+      // Still allow check-in, just flag them
+      noPackageAttendees.push(customerId);
     }
 
     await Promise.all(customers.map((customer) => customer.save()));
 
-    const newRecord = new ClassRecord({
-      recordId,
-      classId,
-      instructorId,
-      date,
-      attendees: uniqueAttendees,
-    });
+    let record;
+    let message;
 
-    await newRecord.save();
+    if (existingRecord) {
+      existingRecord.instructorId = instructorId;
+      existingRecord.className = className || existingRecord.className;
+      existingRecord.classTime = classTime || existingRecord.classTime;
+      existingRecord.attendees.push(...newAttendeeIds);
+      existingRecord.noPackageAttendees = [
+        ...new Set([...(existingRecord.noPackageAttendees || []), ...noPackageAttendees])
+      ];
+
+      record = await existingRecord.save();
+      message = "Check-ins added to the existing class session for today.";
+    } else {
+      const recordId = await getNextRecordIdValue();
+
+      record = await new ClassRecord({
+        recordId,
+        classId,
+        className,
+        classTime,
+        instructorId,
+        date,
+        attendees: uniqueRequestedAttendees,
+        noPackageAttendees
+      }).save();
+
+      message = "New class session created and check-ins saved.";
+    }
+
+    if (noPackageAttendees.length > 0) {
+      message += ` Warning: No valid package or class balance for: ${noPackageAttendees.join(", ")}.`;
+    }
+
+    const attendeeDetails = await buildAttendeeDetails(record.attendees || []);
 
     res.json({
-      message: "Class record saved",
-      record: newRecord,
+      message,
+      record: {
+        ...record.toObject(),
+        attendeeDetails
+      }
     });
   } catch (err) {
     res.status(500).json({ message: "Failed to save record", error: err.message });

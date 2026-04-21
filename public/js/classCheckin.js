@@ -1,5 +1,6 @@
 let selectedClass = null;
 let selectedInstructor = null;
+let currentRecord = null;
 let attendees = [];
 let currentUser = null;
 
@@ -27,13 +28,21 @@ function parseTimeLabelToMinutes(label) {
   return hour * 60 + minutes;
 }
 
+function getTodayName() {
+  return DAYS[new Date().getDay()];
+}
+
+function getTodayDisplay() {
+  return new Date().toLocaleDateString();
+}
+
 function findAvailableClass(classes) {
   const now = new Date();
-  const today = DAYS[now.getDay()];
+  const today = getTodayName();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
-  const earliestCheckin = nowMinutes - 30;
-  const latestCheckin = nowMinutes + 90;
+  const earliestAllowedStart = nowMinutes - 180;
+  const latestAllowedStart = nowMinutes + 60;
 
   const todaysClasses = classes
     .filter((cls) => cls.dayOfWeek === today)
@@ -44,12 +53,21 @@ function findAvailableClass(classes) {
     .filter(
       (cls) =>
         Number.isFinite(cls.startMinutes) &&
-        cls.startMinutes >= earliestCheckin &&
-        cls.startMinutes <= latestCheckin
+        cls.startMinutes >= earliestAllowedStart &&
+        cls.startMinutes <= latestAllowedStart
     )
     .sort((a, b) => Math.abs(a.startMinutes - nowMinutes) - Math.abs(b.startMinutes - nowMinutes));
 
   return todaysClasses[0] || null;
+}
+
+function getTodaysClasses(classes) {
+  const today = getTodayName();
+
+  return classes
+    .filter((cls) => cls.dayOfWeek === today)
+    .slice()
+    .sort((a, b) => parseTimeLabelToMinutes(a.time) - parseTimeLabelToMinutes(b.time));
 }
 
 async function loadCurrentUser() {
@@ -82,28 +100,39 @@ async function fetchInstructorById(instructorId) {
   }
 }
 
+async function fetchTodayRecordByClass(classId) {
+  const res = await fetch(`/api/classRecord/today/${classId}`);
+  if (!res.ok) {
+    throw new Error("Could not load today's class record.");
+  }
+  return res.json();
+}
+
 async function loadClassesForDropdown(classes) {
   const select = document.getElementById("select_class");
   select.innerHTML = "";
 
-  classes
-    .slice()
-    .sort((a, b) => {
-      const dayDiff = DAYS.indexOf(a.dayOfWeek) - DAYS.indexOf(b.dayOfWeek);
-      if (dayDiff !== 0) return dayDiff;
-      return parseTimeLabelToMinutes(a.time) - parseTimeLabelToMinutes(b.time);
-    })
-    .forEach((cls) => {
-      const opt = document.createElement("option");
-      opt.value = cls.classId;
-      opt.textContent = `${cls.dayOfWeek} ${cls.time} – ${cls.className}`;
-      select.appendChild(opt);
-    });
+  const todaysClasses = getTodaysClasses(classes);
+
+  if (todaysClasses.length === 0) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "No classes scheduled for today";
+    select.appendChild(opt);
+    return;
+  }
+
+  todaysClasses.forEach((cls) => {
+    const opt = document.createElement("option");
+    opt.value = cls.classId;
+    opt.textContent = `${cls.className}`;
+    select.appendChild(opt);
+  });
 }
 
 function renderCheckinHeader() {
   document.getElementById("checkinTitle").textContent =
-    `${selectedClass.dayOfWeek} ${selectedClass.time} – ${selectedClass.className}`;
+    `${selectedClass.className} — ${getTodayDisplay()}`;
 
   document.getElementById("checkinInstructor").textContent =
     `Instructor: ${
@@ -111,6 +140,31 @@ function renderCheckinHeader() {
         ? `${selectedInstructor.firstName} ${selectedInstructor.lastName}`
         : selectedClass.instructorId
     }`;
+}
+
+function clearSearchBox() {
+  const input = document.getElementById("customerSearch");
+  const results = document.getElementById("customerResults");
+
+  input.value = "";
+  results.innerHTML = "";
+  results.classList.add("hidden");
+}
+
+async function loadExistingSession() {
+  currentRecord = await fetchTodayRecordByClass(selectedClass.classId);
+
+  if (currentRecord?.attendeeDetails?.length) {
+    attendees = currentRecord.attendeeDetails.map((customer) => ({
+      customerId: customer.customerId,
+      firstName: customer.firstName,
+      lastName: customer.lastName,
+    }));
+  } else {
+    attendees = [];
+  }
+
+  renderAttendees();
 }
 
 async function setupMemberSelfCheckin() {
@@ -132,7 +186,6 @@ async function setupMemberSelfCheckin() {
   searchInput.placeholder = "You are checking in to the current available class";
   resultsBox.classList.add("hidden");
   resultsBox.innerHTML = "";
-  attendees = [];
 
   try {
     const res = await fetch(`/api/customer/${currentUser.customerId}`);
@@ -159,6 +212,7 @@ function resetCheckinScreen() {
   attendees = [];
   selectedClass = null;
   selectedInstructor = null;
+  currentRecord = null;
 
   const input = document.getElementById("customerSearch");
   input.value = "";
@@ -175,6 +229,7 @@ document.getElementById("startCheckinBtn").addEventListener("click", async () =>
   attendees = [];
   selectedClass = null;
   selectedInstructor = null;
+  currentRecord = null;
 
   const classes = await fetchAllClasses();
 
@@ -190,6 +245,7 @@ document.getElementById("startCheckinBtn").addEventListener("click", async () =>
     selectedInstructor = await fetchInstructorById(selectedClass.instructorId);
 
     openCheckinScreen();
+    await loadExistingSession();
     await setupMemberSelfCheckin();
     return;
   }
@@ -211,6 +267,7 @@ document.getElementById("continueBtn").addEventListener("click", async () => {
   selectedInstructor = await fetchInstructorById(selectedClass.instructorId);
 
   openCheckinScreen();
+  await loadExistingSession();
   await setupMemberSelfCheckin();
 });
 
@@ -241,8 +298,7 @@ async function searchCustomers(query) {
 
       div.addEventListener("click", () => {
         addAttendee(customer);
-        box.classList.add("hidden");
-        document.getElementById("customerSearch").value = "";
+        clearSearchBox();
       });
 
       box.appendChild(div);
@@ -285,13 +341,28 @@ function renderAttendees() {
 
   attendees.forEach((customer) => {
     const li = document.createElement("li");
-    li.textContent = `${customer.firstName} ${customer.lastName} (${customer.customerId})`;
+    li.style.display = "flex";
+    li.style.alignItems = "center";
+    li.style.justifyContent = "space-between";
+    li.style.gap = "10px";
+    li.style.marginBottom = "8px";
+
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = `${customer.firstName} ${customer.lastName} (${customer.customerId})`;
+    nameSpan.style.flex = "1";
+
+    li.appendChild(nameSpan);
 
     if (!currentUser || currentUser.role !== "member") {
       const removeBtn = document.createElement("button");
       removeBtn.textContent = "Remove";
       removeBtn.className = "btn btn--danger btn--small";
-      removeBtn.style.marginLeft = "1rem";
+
+      removeBtn.style.padding = "6px 10px";
+      removeBtn.style.fontSize = "0.85rem";
+      removeBtn.style.lineHeight = "1";
+      removeBtn.style.minWidth = "70px";
+      removeBtn.style.marginLeft = "8px";
 
       removeBtn.addEventListener("click", () => {
         attendees = attendees.filter((a) => a.customerId !== customer.customerId);
@@ -316,25 +387,27 @@ document.getElementById("submitRecordBtn").addEventListener("click", async () =>
     return;
   }
 
-  if (
-    currentUser &&
-    currentUser.role === "member" &&
-    (attendees.length !== 1 || attendees[0].customerId !== currentUser.customerId)
-  ) {
-    alert("Members can only check in themselves.");
-    return;
+  let attendeeIdsToSubmit;
+
+  if (currentUser && currentUser.role === "member") {
+    const selfInList = attendees.some((a) => a.customerId === currentUser.customerId);
+
+    if (!selfInList) {
+      alert("Members can only check in themselves.");
+      return;
+    }
+
+    attendeeIdsToSubmit = [currentUser.customerId];
+  } else {
+    attendeeIdsToSubmit = attendees.map((a) => a.customerId);
   }
 
-  const idRes = await fetch("/api/classRecord/getNextId");
-  const { recordId } = await idRes.json();
-  const today = new Date().toISOString().split("T")[0];
-
   const record = {
-    recordId,
     classId: selectedClass.classId,
+    className: selectedClass.className,
+    classTime: selectedClass.time,
     instructorId: selectedInstructor.instructorId || selectedClass.instructorId,
-    date: today,
-    attendees: attendees.map((a) => a.customerId),
+    attendees: attendeeIdsToSubmit,
   };
 
   const res = await fetch("/api/classRecord/add", {
@@ -346,8 +419,19 @@ document.getElementById("submitRecordBtn").addEventListener("click", async () =>
   const result = await res.json().catch(() => ({}));
 
   if (res.ok) {
-    alert("Class record submitted and class balance updated.");
-    resetCheckinScreen();
+    currentRecord = result.record || null;
+
+    if (currentRecord?.attendeeDetails) {
+      attendees = currentRecord.attendeeDetails.map((customer) => ({
+        customerId: customer.customerId,
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+      }));
+      renderAttendees();
+    }
+
+    clearSearchBox();
+    alert(result.message || "Class check-in saved.");
   } else {
     alert(result.message || "Failed to submit record.");
   }

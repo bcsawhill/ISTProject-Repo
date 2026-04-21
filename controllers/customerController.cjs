@@ -1,5 +1,7 @@
 const Customer = require("../models/customerModel.cjs");
 const { syncCustomerPackageStatus } = require("../utils/packageStatus.cjs");
+const bcrypt = require("bcrypt");
+const User = require("../models/userModel.cjs");
 
 function getRole(req) {
   return req.session?.user?.role || null;
@@ -36,10 +38,34 @@ exports.add = async (req, res) => {
       address,
       classBalance,
       senior,
+      role: newUserRole = "member",
+      username,
+      password,
     } = req.body;
 
     if (!firstName || !lastName || !email || !phone) {
       return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    if (!username || !password) {
+      return res.status(400).json({
+        message: "Username and temporary password are required for every customer account"
+      });
+    }
+
+    if (!["admin", "staff", "instructor", "member"].includes(newUserRole)) {
+      return res.status(400).json({ message: "Invalid role" });
+    }
+
+    if (newUserRole !== "member" && role !== "admin") {
+      return res.status(403).json({
+        message: "Only admins can create admin, staff, or instructor accounts"
+      });
+    }
+
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ message: "Username already exists" });
     }
 
     const newCustomer = new Customer({
@@ -54,13 +80,29 @@ exports.add = async (req, res) => {
     });
 
     await newCustomer.save();
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const createdUser = await User.create({
+      username,
+      passwordHash,
+      role: newUserRole,
+      customerId,
+    });
+
     res.status(201).json({
       message: "Customer added successfully",
       customer: newCustomer,
+      userCreated: true,
+      user: {
+        username: createdUser.username,
+        role: createdUser.role,
+        customerId: createdUser.customerId,
+      },
     });
   } catch (err) {
-    console.error("Error adding customer:", err.message);
-    res.status(500).json({ message: "Failed to add customer", error: err.message });
+    console.error("Error adding customer:", err);
+    res.status(500).json({ message: err.message || "Failed to add customer" });
   }
 };
 
