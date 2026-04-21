@@ -1,3 +1,39 @@
+/* ============================================ */
+/* Mobile Menu Handler                          */
+/* ============================================ */
+function setupMobileMenu() {
+  const hamburger = document.querySelector(".hamburger-menu");
+  const nav = document.querySelector(".nav");
+
+  if (!hamburger || !nav) return;
+
+  // Toggle menu on hamburger click
+  hamburger.addEventListener("click", () => {
+    nav.classList.toggle("mobile-open");
+    hamburger.classList.toggle("open");
+  });
+
+  // Close menu when a link is clicked
+  nav.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      nav.classList.remove("mobile-open");
+      hamburger.classList.remove("open");
+    });
+  });
+
+  // Close menu when clicking outside
+  document.addEventListener("click", (e) => {
+    const sidebar = document.querySelector(".sidebar");
+    if (sidebar && !sidebar.contains(e.target)) {
+      nav.classList.remove("mobile-open");
+      hamburger.classList.remove("open");
+    }
+  });
+}
+
+/* ============================================ */
+/* Original Sidebar Dropdown Setup              */
+/* ============================================ */
 function setupSidebarDropdowns() {
   document.querySelectorAll(".nav-dropdown-btn").forEach((btn) => {
     if (btn.dataset.bound === "true") return;
@@ -252,6 +288,7 @@ function applyRoleLinks(user) {
 
 async function initSidebarRoleUI() {
   setupSidebarDropdowns();
+  setupMobileMenu();
 
   try {
     const res = await fetch("/api/me");

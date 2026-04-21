@@ -210,6 +210,63 @@
         font-size: 0.72rem;
       }
     }
+
+    @media (max-width: 768px) {
+      main.customer-search-main {
+        width: 100%;
+        padding: 1rem 0.75rem;
+      }
+
+      .results-table {
+        min-width: 100%;
+        font-size: 0.75rem;
+      }
+
+      .results-table th,
+      .results-table td {
+        padding: 0.4rem 0.25rem;
+        font-size: 0.75rem;
+      }
+
+      .actions-cell .btn {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.25rem;
+      }
+
+      .status-badge,
+      .waiver-badge {
+        font-size: 0.65rem;
+        padding: 0.15rem 0.35rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      main.customer-search-main {
+        padding: 0.75rem 0.5rem;
+      }
+
+      .results-table {
+        min-width: 100%;
+        font-size: 0.7rem;
+      }
+
+      .results-table th,
+      .results-table td {
+        padding: 0.3rem 0.15rem;
+        font-size: 0.7rem;
+      }
+
+      .actions-cell .btn {
+        font-size: 0.6rem;
+        padding: 0.15rem 0.2rem;
+      }
+
+      .status-badge,
+      .waiver-badge {
+        font-size: 0.6rem;
+        padding: 0.1rem 0.25rem;
+      }
+    }
   </style>
 </head>
 
@@ -219,6 +276,13 @@
     <a class="logo-wrap" href="dashboard.html">
       <img src="../images/HomLogo.png" class="logo">
     </a>
+    
+    <button class="hamburger-menu" aria-label="Toggle navigation menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
     <nav class="nav">
 
       <div class="nav-dropdown">
