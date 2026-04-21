@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Instructor</title>
-    <link rel="stylesheet" href="../css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Instructor</title>
+  <link rel="stylesheet" href="../css/style.css">
 </head>
-  
 
-    <body class="layout--sidebar">
-  <!-- Re-use the same sidebar -->
+<body class="layout--sidebar">
   <aside class="sidebar">
     <a class="logo-wrap" href="dashboard.html">
       <img src="../images/HomLogo.png" alt="YogaTrack Logo" class="logo">
@@ -50,44 +48,57 @@
         </div>
       </div>
 
+      <div id="nav-waiver-link">
+        <a href="waiver.html">Waiver</a>
+      </div>
+
       <a href="../index.html">Log Out</a>
     </nav>
   </aside>
 
-  <!-- Instructor form -->
   <main class="layout--center">
-     <div class="instInfoContainer">
-            <h1>Enter Instructor Info</h1>
-            <form class="card" id="instructorForm">
-                <label class="instinfolabel" for="firstName">First:</label>
-                <input type="text" id="firstName" name="firstName" required>
+    <div class="instInfoContainer">
+      <h1>Enter Instructor Info</h1>
+      <form class="card" id="instructorForm">
+        <label class="instinfolabel" for="firstName">First:</label>
+        <input type="text" id="firstName" name="firstName" required>
 
-                <label class="instinfolabel" for="lastName">Last:</label>
-                <input type="text" id="lastName" name="lastName" required>
+        <label class="instinfolabel" for="lastName">Last:</label>
+        <input type="text" id="lastName" name="lastName" required>
 
-                <label class="instinfolabel" for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
+        <label class="instinfolabel" for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
 
-                <label class="instinfolabel" for="phone">Phone Number:</label>
-                <input type="tel" id="phone" name="phone" required>
+        <label class="instinfolabel" for="phone">Phone Number:</label>
+        <input type="tel" id="phone" name="phone" required>
 
-                <label class="instinfolabel" for="address">Address:</label>
-                <textarea type="text" id="address" name="address"></textarea>
+        <label class="instinfolabel" for="address">Address:</label>
+        <textarea id="address" name="address"></textarea>
 
-                <fieldset>
-                  <legend>Preferred Contact</legend>
-                   <div class="radio-row">
-                    <label><input type="radio" name="pref" value="phone">Phone</label>
-                    <label><input type="radio" name="pref" value="email">Email</label>
-                   </div>
-                 </fieldset>
+        <fieldset>
+          <legend>Preferred Contact</legend>
+          <div class="radio-row">
+            <label><input type="radio" name="pref" value="phone">Phone</label>
+            <label><input type="radio" name="pref" value="email">Email</label>
+          </div>
+        </fieldset>
 
-                <button id="instructorsubmit" class="btn" type="submit">Submit</button>
-              </form>
+        <div id="accountFieldsWrapper" style="margin-top: 1rem;">
+          <label class="instinfolabel" for="username">Username:</label>
+          <input type="text" id="username" name="username" autocomplete="off" required>
+
+          <label class="instinfolabel" for="password">Temporary Password:</label>
+          <input type="password" id="password" name="password" minlength="8" required>
+
+          <small>Create login credentials for the instructor account.</small>
         </div>
+
+        <button id="instructorsubmit" class="btn" type="submit">Submit</button>
+      </form>
+    </div>
   </main>
 
-<script src="../js/instructor.js"></script>
-<script src="../js/sidebarRoleUI.js"></script>
+  <script src="../js/instructor.js"></script>
+  <script src="../js/sidebarRoleUI.js"></script>
 </body>
 </html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body class="layout--sidebar">
+  <aside class="sidebar">
+    <a class="logo-wrap" href="profile.html">
+      <img src="../images/HomLogo.png" alt="Yoga H'om Logo" class="logo">
+    </a>
+
+    <nav class="nav">
+      <div class="nav-dropdown" id="nav-instructors">
+        <button class="nav-dropdown-btn">Instructors ▾</button>
+        <div class="nav-dropdown-menu">
+          <a href="instructor.html">Add New Instructor</a>
+          <a href="instructor-search.html">Search/Edit Instructors</a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown" id="nav-packages">
+        <button class="nav-dropdown-btn">Packages ▾</button>
+        <div class="nav-dropdown-menu">
+          <a href="package-sale.html">Package Sale</a>
+          <a href="package-sales.html">Package Records</a>
+          <a href="package-edit.html">Edit Packages</a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown" id="nav-classes">
+        <button class="nav-dropdown-btn">Classes ▾</button>
+        <div class="nav-dropdown-menu">
+          <a href="class-schedule.html">Class Schedule</a>
+          <a href="class-checkin.html">Class Check-In</a>
+          <a href="class-records.html">Class Records</a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown" id="nav-customers">
+        <button class="nav-dropdown-btn">Customers ▾</button>
+        <div class="nav-dropdown-menu">
+          <a href="customers.html">Add New Customer</a>
+          <a href="customers-search.html">Search/Edit Customer</a>
+        </div>
+      </div>
+
+      <div id="nav-profile-link">
+        <a href="profile.html">Profile</a>
+      </div>
+
+      <div id="nav-waiver-link">
+        <a href="waiver.html">Waiver</a>
+      </div>
+
+      <a href="../index.html">Log Out</a>
+    </nav>
+  </aside>
+
+  <main class="layout--center">
+    <div class="card card--wide" style="margin-bottom: 1.5rem;">
+      <h1 class="page-title">Profile</h1>
+
+      <p id="profileNotice" style="margin-bottom:1rem;"></p>
+      <p id="profileMessage" class="error-message" style="display:none;"></p>
+
+      <form id="profileForm">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1rem;">
+          <div>
+            <label for="profileUsername"><strong>Username</strong></label>
+            <input type="text" id="profileUsername" readonly>
+          </div>
+
+          <div>
+            <label for="profileRole"><strong>Role</strong></label>
+            <input type="text" id="profileRole" readonly>
+          </div>
+
+          <div>
+            <label for="profileCustomerId"><strong>Customer ID</strong></label>
+            <input type="text" id="profileCustomerId" readonly>
+          </div>
+
+          <div>
+            <label for="profileFirstName"><strong>First Name</strong></label>
+            <input type="text" id="profileFirstName">
+          </div>
+
+          <div>
+            <label for="profileLastName"><strong>Last Name</strong></label>
+            <input type="text" id="profileLastName">
+          </div>
+
+          <div>
+            <label for="profileEmail"><strong>Email</strong></label>
+            <input type="email" id="profileEmail">
+          </div>
+
+          <div>
+            <label for="profilePhone"><strong>Phone</strong></label>
+            <input type="tel" id="profilePhone">
+          </div>
+
+          <div style="grid-column: 1 / -1;">
+            <label for="profileAddress"><strong>Address</strong></label>
+            <textarea id="profileAddress"></textarea>
+          </div>
+        </div>
+
+        <div class="btn-row" style="margin-top: 1rem;">
+          <button class="btn btn--primary" type="submit">Save Profile</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card card--wide">
+      <h2>Change Password</h2>
+      <p id="passwordMessage" class="error-message" style="display:none;"></p>
+
+      <form id="changePasswordForm">
+        <label for="currentPassword">Current Password</label>
+        <input type="password" id="currentPassword" required>
+
+        <label for="newPassword">New Password</label>
+        <input type="password" id="newPassword" minlength="8" required>
+
+        <label for="confirmPassword">Confirm New Password</label>
+        <input type="password" id="confirmPassword" minlength="8" required>
+
+        <button class="btn btn--primary" type="submit">Update Password</button>
+      </form>
+    </div>
+  </main>
+
+  <script src="../js/profile.js"></script>
+  <script src="../js/sidebarRoleUI.js"></script>
+</body>
+</html>
