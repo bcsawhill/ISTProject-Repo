@@ -627,6 +627,29 @@ app.post("/api/waiver", requireLogin, async (req, res) => {
   }
 });
 
+app.get("/api/waiver-status/:customerId", requireLogin, async (req, res) => {
+  try {
+    const waiver = await Waiver.findOne({ customerId: req.params.customerId });
+
+    if (!waiver) {
+      return res.json({
+        customerId: req.params.customerId,
+        completed: false
+      });
+    }
+
+    res.json({
+      customerId: waiver.customerId,
+      completed: true,
+      signedAt: waiver.signedAt,
+      fullName: waiver.fullName
+    });
+  } catch (err) {
+    console.error("Get waiver status error:", err);
+    res.status(500).json({ message: "Failed to load waiver status" });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, function () {
