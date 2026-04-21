@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .reports-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .report-stat {
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .report-stat h3 {
+      margin: 0 0 0.35rem 0;
+      font-size: 1rem;
+    }
+
+    .report-stat p {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: end;
+      margin-bottom: 1rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .filter-group input {
+      min-width: 180px;
+    }
+
+    .report-section {
+      margin-top: 1.25rem;
+    }
+
+    .report-section table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+    }
+
+    .report-section th,
+    .report-section td {
+      padding: 0.7rem 0.5rem;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .muted {
+      color: #666;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+
+<body class="layout--sidebar">
+  <aside class="sidebar">
+    <a class="logo-wrap" href="dashboard.html">
+      <img src="../images/HomLogo.png" class="logo">
+    </a>
+
+    <nav class="nav">
+      <div class="nav-dropdown" id="nav-instructors">
+        <button class="nav-dropdown-btn">Instructors ▾</button>
+        <div class="nav-dropdown-menu">
+          <a href="instructor.html">Add New Instructor</a>
+          <a href="instructor-search.html">Search/Edit Instructors</a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown" id="nav-packages">
+        <button class="nav-dropdown-btn">Packages ▾</button>
+        <div class="nav-dropdown-menu">
+          <a href="package-sale.html">Package Sale</a>
+          <a href="package-sales.html">Package Records</a>
+          <a href="package-edit.html">Edit Packages</a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown" id="nav-classes">
+        <button class="nav-dropdown-btn">Classes ▾</button>
+        <div class="nav-dropdown-menu">
+          <a href="class-schedule.html">Class Schedule</a>
+          <a href="class-checkin.html">Class Check-In</a>
+          <a href="class-records.html">Class Records</a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown" id="nav-customers">
+        <button class="nav-dropdown-btn">Customers ▾</button>
+        <div class="nav-dropdown-menu">
+          <a href="customers.html">Add New Customer</a>
+          <a href="customers-search.html">Search/Edit Customer</a>
+        </div>
+      </div>
+
+      <div id="nav-reports-link">
+        <a href="reports.html">Reports</a>
+      </div>
+
+      <div id="nav-waiver-link">
+        <a href="waiver.html">Waiver</a>
+      </div>
+
+      <a href="../index.html">Log Out</a>
+    </nav>
+  </aside>
+
+  <main class="layout--center">
+    <div class="card card--wide">
+      <h1 class="page-title">Reports</h1>
+      <p class="muted">Revenue and attendance reports use the selected date range. Unused attendance balance and total attendance sold are current/all-time totals.</p>
+
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="startDate">Start Date</label>
+          <input type="date" id="startDate">
+        </div>
+
+        <div class="filter-group">
+          <label for="endDate">End Date</label>
+          <input type="date" id="endDate">
+        </div>
+
+        <button class="btn btn--primary" id="runReportsBtn">Run Reports</button>
+      </div>
+
+      <div class="reports-grid">
+        <div class="report-stat">
+          <h3>Revenue Report</h3>
+          <p id="revenueTotal">$0.00</p>
+        </div>
+
+        <div class="report-stat">
+          <h3>Attendance Report</h3>
+          <p id="attendanceTotal">0</p>
+        </div>
+
+        <div class="report-stat">
+          <h3>Total Unused Attendance Balance</h3>
+          <p id="unusedBalanceTotal">0</p>
+        </div>
+
+        <div class="report-stat">
+          <h3>Total Attendance Sold</h3>
+          <p id="attendanceSoldTotal">0</p>
+        </div>
+      </div>
+
+      <div class="report-section">
+        <h2>Revenue Report (Given Time Frame)</h2>
+        <table id="revenueTable">
+          <thead>
+            <tr>
+              <th>Sale ID</th>
+              <th>Date</th>
+              <th>Customer ID</th>
+              <th>Package</th>
+              <th>Price Paid</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="report-section">
+        <h2>Attendance Report (Given Time Frame)</h2>
+        <table id="attendanceTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Class</th>
+              <th>Instructor ID</th>
+              <th>Attendance</th>
+              <th>No Package</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/reports.js"></script>
+  <script src="../js/sidebarRoleUI.js"></script>
+</body>
+</html>
