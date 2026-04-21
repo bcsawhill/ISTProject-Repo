@@ -497,6 +497,16 @@ select.form-input {
     flex-direction: column;
   }
 
+  /* Background image adjustments for mobile */
+  .background {
+    background-attachment: scroll;
+    min-height: 100vh;
+  }
+
+  .overlay {
+    position: relative;
+  }
+
   /* Sidebar becomes collapsible */
   .sidebar {
     width: 100%;
@@ -664,6 +674,12 @@ select.form-input {
   /* Layout adjustments */
   .layout--center {
     padding: 0.75rem;
+  }
+
+  /* Background adjustments for small phones */
+  .background {
+    background-attachment: scroll;
+    min-height: 100vh;
   }
 
   /* Sidebar optimizations */
