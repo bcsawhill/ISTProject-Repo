@@ -124,6 +124,7 @@ function reorderSidebar(role) {
     packages: getDropdownBlock("nav-packages", "Packages"),
     classes: getDropdownBlock("nav-classes", "Classes"),
     customers: getDropdownBlock("nav-customers", "Customers"),
+    reports: document.getElementById("nav-reports-link") || getTopLevelDirectLink("reports.html"),
     profile: document.getElementById("nav-profile-link") || getTopLevelDirectLink("profile.html"),
     waiver: document.getElementById("nav-waiver-link") || getTopLevelDirectLink("waiver.html"),
     logout:
@@ -133,7 +134,7 @@ function reorderSidebar(role) {
   };
 
   const orderByRole = {
-    admin: ["instructors", "packages", "classes", "customers", "profile", "waiver", "logout"],
+    admin: ["instructors", "packages", "classes", "customers", "reports", "profile", "waiver", "logout"],
     staff: ["packages", "classes", "customers", "profile", "waiver", "logout"],
     instructor: ["packages", "classes", "customers", "profile", "waiver", "logout"],
     member: ["classes", "profile", "waiver", "logout"],
@@ -151,7 +152,9 @@ function reorderSidebar(role) {
 
 function applyRoleLinks(user) {
   const role = user.role;
+  const currentPage = window.location.pathname.split("/").pop();
 
+  ensureTopLevelLinkBlock("nav-reports-link", "reports.html", "Reports");
   ensureTopLevelLinkBlock("nav-profile-link", "profile.html", "Profile");
   ensureTopLevelLinkBlock("nav-waiver-link", "waiver.html", "Waiver");
 
@@ -194,10 +197,18 @@ function applyRoleLinks(user) {
     ])
   };
 
+  if (role !== "admin" && currentPage === "reports.html") {
+    if (role === "member") {
+      window.location.href = "/htmls/member-dashboard.html";
+    } else {
+      window.location.href = "/htmls/dashboard.html";
+    }
+    return;
+  }
+
   const allowed = allowedLinksByRole[role];
 
   if (role === "member") {
-    const currentPage = window.location.pathname.split("/").pop();
     const allowedMemberPages = new Set([
       "member-dashboard.html",
       "class-checkin.html",
@@ -242,6 +253,7 @@ function applyRoleLinks(user) {
       link.style.display = show ? "" : "none";
     });
 
+    setBlockVisibility("nav-reports-link", "reports.html", allowed.has("reports.html"));
     setBlockVisibility("nav-profile-link", "profile.html", allowed.has("profile.html"));
     setBlockVisibility("nav-waiver-link", "waiver.html", allowed.has("waiver.html"));
   }
