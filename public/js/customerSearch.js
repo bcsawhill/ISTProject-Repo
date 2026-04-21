@@ -3,6 +3,39 @@ const resultsTable = document.querySelector("#resultsTable tbody");
 
 let loggedInUser = null;
 
+function formatPhone(phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)} - ${digits.slice(6)}`;
+  }
+
+  return phone || "";
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function formatEmailForDisplay(email) {
+  const safeEmail = String(email || "").trim();
+  const atIndex = safeEmail.indexOf("@");
+
+  if (atIndex === -1) {
+    return escapeHtml(safeEmail);
+  }
+
+  const firstPart = escapeHtml(safeEmail.slice(0, atIndex));
+  const secondPart = escapeHtml(safeEmail.slice(atIndex));
+
+  return `${firstPart}<br>${secondPart}`;
+}
+
 async function loadCurrentUser() {
   try {
     const res = await fetch("/api/me");
@@ -47,10 +80,7 @@ async function loadAccountStatusForCustomer(customerId) {
     if (!res.ok) {
       return {
         hasLogin: false,
-        isActive: null,
-        statusLabel: "No Login",
-        role: null,
-        username: null,
+        isActive: null
       };
     }
 
@@ -59,29 +89,35 @@ async function loadAccountStatusForCustomer(customerId) {
     if (!data.hasLogin) {
       return {
         hasLogin: false,
-        isActive: null,
-        statusLabel: "No Login",
-        role: null,
-        username: null,
+        isActive: null
       };
     }
 
     return {
       hasLogin: true,
-      isActive: data.isActive,
-      statusLabel: data.isActive ? "Active" : "Inactive",
-      role: data.role || null,
-      username: data.username || null,
+      isActive: data.isActive
     };
   } catch (err) {
     console.error("Error loading account status:", err);
     return {
       hasLogin: false,
-      isActive: null,
-      statusLabel: "Error",
-      role: null,
-      username: null,
+      isActive: null
     };
+  }
+}
+
+async function loadWaiverStatusForCustomer(customerId) {
+  try {
+    const res = await fetch(`/api/waiver-status/${customerId}`);
+
+    if (!res.ok) {
+      return { completed: false };
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error("Error loading waiver status:", err);
+    return { completed: false };
   }
 }
 
@@ -97,6 +133,14 @@ function getStatusBadge(accountStatus) {
   return `<span class="status-badge status-badge--inactive">Inactive</span>`;
 }
 
+function getWaiverBadge(waiverStatus) {
+  if (waiverStatus.completed) {
+    return `<span class="waiver-badge waiver-badge--complete">Completed</span>`;
+  }
+
+  return `<span class="waiver-badge waiver-badge--incomplete">Not Completed</span>`;
+}
+
 async function refreshSearchResults() {
   const query = searchInput.value.trim();
   const res = await fetch(`/api/customer/search?q=${encodeURIComponent(query)}`);
@@ -104,26 +148,25 @@ async function refreshSearchResults() {
 
   resultsTable.innerHTML = "";
 
-  const statusEntries = await Promise.all(
+  const rowData = await Promise.all(
     customers.map(async (customer) => {
-      const status = await loadAccountStatusForCustomer(customer.customerId);
-      return [customer.customerId, status];
+      const [accountStatus, waiverStatus] = await Promise.all([
+        loadAccountStatusForCustomer(customer.customerId),
+        loadWaiverStatusForCustomer(customer.customerId)
+      ]);
+
+      return {
+        customer,
+        accountStatus,
+        waiverStatus
+      };
     })
   );
 
-  const statusMap = Object.fromEntries(statusEntries);
-
-  customers.forEach((c) => {
+  rowData.forEach(({ customer: c, accountStatus, waiverStatus }) => {
     const row = document.createElement("tr");
-    const accountStatus = statusMap[c.customerId] || {
-      hasLogin: false,
-      isActive: null,
-      statusLabel: "No Login",
-      role: null,
-      username: null,
-    };
-
     const actions = [];
+
     actions.push(`<button class="btn editBtn" data-id="${c.customerId}">Edit</button>`);
 
     if (loggedInUser && loggedInUser.role === "admin") {
@@ -138,12 +181,16 @@ async function refreshSearchResults() {
     }
 
     row.innerHTML = `
-      <td>${c.customerId}</td>
-      <td>${c.firstName} ${c.lastName}</td>
-      <td>${c.email}</td>
-      <td>${c.phone}</td>
-      <td>${c.classBalance}</td>
+      <td class="customer-id-cell">${escapeHtml(c.customerId)}</td>
+      <td class="name-cell">
+        <div>${escapeHtml(c.firstName)}</div>
+        <div>${escapeHtml(c.lastName)}</div>
+      </td>
+      <td class="email-cell">${formatEmailForDisplay(c.email)}</td>
+      <td class="phone-cell">${escapeHtml(formatPhone(c.phone))}</td>
+      <td class="balance-cell">${escapeHtml(String(c.classBalance))}</td>
       <td>${getStatusBadge(accountStatus)}</td>
+      <td>${getWaiverBadge(waiverStatus)}</td>
       <td>
         <div class="actions-cell">
           ${actions.join("")}

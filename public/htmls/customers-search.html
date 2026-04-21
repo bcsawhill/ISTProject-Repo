@@ -6,20 +6,31 @@
   <title>Search Customers</title>
   <link rel="stylesheet" href="../css/style.css">
   <style>
-    .customerSearchContainer {
-      width: min(1120px, calc(100vw - 2rem));
-      margin: 0 auto;
+    main.customer-search-main {
+      width: calc(100vw - 210px);
+      max-width: none;
+      margin: 0;
+      padding: 1.25rem 1rem 1.25rem 0.75rem;
+      box-sizing: border-box;
+      display: block;
     }
 
-    .customerSearchContainer .card {
+    .customerSearchContainer {
       width: 100%;
+      max-width: none;
+      margin: 0;
+    }
+
+    .customerSearchContainer .card,
+    .customerSearchContainer .card--wide {
+      width: 100%;
+      max-width: none;
       box-sizing: border-box;
-      overflow: hidden;
     }
 
     .search-bar-container {
       width: 100%;
-      margin-bottom: 1rem;
+      margin-bottom: 0.7rem;
     }
 
     .search-input {
@@ -30,95 +41,115 @@
     .results-table-wrapper {
       width: 100%;
       overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: 0.2rem;
     }
 
     .results-table {
       width: 100%;
-      table-layout: fixed;
+      min-width: 1030px;
       border-collapse: collapse;
+      table-layout: fixed;
     }
 
     .results-table th,
     .results-table td {
-      padding: 0.85rem 0.65rem;
-      vertical-align: middle;
+      padding: 0.5rem 0.35rem;
       text-align: left;
-      white-space: normal;
-      word-break: break-word;
-      overflow-wrap: anywhere;
-      line-height: 1.3;
+      vertical-align: middle;
+      font-size: 0.88rem;
+      line-height: 1.08;
+    }
+
+    .results-table th {
+      white-space: nowrap;
+    }
+
+    .stacked-header {
+      white-space: normal !important;
+      line-height: 1.05;
+      text-align: center;
     }
 
     .results-table th:nth-child(1),
     .results-table td:nth-child(1) {
-      width: 9%;
+      width: 7%;
     }
 
     .results-table th:nth-child(2),
     .results-table td:nth-child(2) {
-      width: 18%;
+      width: 12%;
     }
 
     .results-table th:nth-child(3),
     .results-table td:nth-child(3) {
-      width: 22%;
+      width: 14%;
     }
 
     .results-table th:nth-child(4),
     .results-table td:nth-child(4) {
-      width: 15%;
+      width: 13%;
     }
 
     .results-table th:nth-child(5),
     .results-table td:nth-child(5) {
-      width: 11%;
+      width: 8%;
       text-align: center;
     }
 
     .results-table th:nth-child(6),
     .results-table td:nth-child(6) {
-      width: 11%;
+      width: 8%;
       text-align: center;
     }
 
     .results-table th:nth-child(7),
     .results-table td:nth-child(7) {
-      width: 14%;
+      width: 11%;
+      text-align: center;
+      padding-right: 0.6rem;
     }
 
-    .results-table td:nth-child(2),
-    .results-table td:nth-child(3) {
+    .results-table th:nth-child(8),
+    .results-table td:nth-child(8) {
+      width: 15%;
+      padding-left: 0.6rem;
+    }
+
+    .customer-id-cell,
+    .phone-cell,
+    .balance-cell {
+      white-space: nowrap;
+    }
+
+    .name-cell {
+      white-space: normal;
+    }
+
+    .name-cell div {
+      line-height: 1.05;
+    }
+
+    .email-cell {
+      white-space: normal;
       word-break: break-word;
       overflow-wrap: anywhere;
+      line-height: 1.05;
     }
 
-    .actions-cell {
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 0.45rem;
-    }
-
-    .actions-cell .btn {
-      width: 100%;
-      min-width: 0;
-      padding: 0.45rem 0.65rem;
-      font-size: 0.9rem;
-      line-height: 1.15;
-      text-align: center;
-    }
-
-    .status-badge {
+    .status-badge,
+    .waiver-badge {
       display: inline-block;
-      padding: 0.3rem 0.6rem;
+      padding: 0.22rem 0.5rem;
       border-radius: 999px;
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       font-weight: 600;
       white-space: nowrap;
-      line-height: 1.1;
+      line-height: 1.05;
     }
 
-    .status-badge--active {
+    .status-badge--active,
+    .waiver-badge--complete {
       background: #e8f7ed;
       color: #1f6f3b;
       border: 1px solid #b9e1c4;
@@ -130,27 +161,53 @@
       border: 1px solid #f2b9b9;
     }
 
-    .status-badge--none {
+    .status-badge--none,
+    .waiver-badge--incomplete {
       background: #f3f3f3;
       color: #666;
       border: 1px solid #ddd;
     }
 
-    @media (max-width: 1000px) {
+    .actions-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      align-items: stretch;
+    }
+
+    .actions-cell .btn {
+      width: 100%;
+      min-width: 0;
+      padding: 0.28rem 0.35rem;
+      font-size: 0.78rem;
+      line-height: 1;
+      text-align: center;
+    }
+
+    @media (max-width: 1300px) {
+      main.customer-search-main {
+        width: calc(100vw - 210px);
+        padding: 1rem 0.85rem 1rem 0.6rem;
+      }
+
+      .results-table {
+        min-width: 1000px;
+      }
+
       .results-table th,
       .results-table td {
-        padding: 0.7rem 0.5rem;
-        font-size: 0.92rem;
+        font-size: 0.82rem;
+        padding: 0.45rem 0.3rem;
       }
 
       .actions-cell .btn {
-        font-size: 0.84rem;
-        padding: 0.4rem 0.5rem;
+        font-size: 0.73rem;
+        padding: 0.25rem 0.3rem;
       }
 
-      .status-badge {
-        font-size: 0.78rem;
-        padding: 0.25rem 0.45rem;
+      .status-badge,
+      .waiver-badge {
+        font-size: 0.72rem;
       }
     }
   </style>
@@ -206,7 +263,7 @@
     </nav>
   </aside>
 
-  <main class="layout--center">
+  <main class="layout--center customer-search-main">
     <div class="customerSearchContainer">
       <div class="card card--wide">
         <h1 class="page-title">Search Customers</h1>
@@ -228,8 +285,9 @@
                 <th>Name</th>
                 <th>Email</th>
                 <th>Phone</th>
-                <th>Class Balance</th>
+                <th class="stacked-header">Class<br>Balance</th>
                 <th>Status</th>
+                <th>Waiver</th>
                 <th>Actions</th>
               </tr>
             </thead>
